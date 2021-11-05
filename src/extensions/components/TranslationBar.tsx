@@ -320,7 +320,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
           }
 
           console.log('completed');
-         
+          console.log('test');
 
           // await clientSidePage.save(true);
 
