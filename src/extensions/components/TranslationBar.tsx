@@ -28,7 +28,9 @@ import { Navigation } from "@pnp/sp/navigation";
 import { PnPClientStorage, dateAdd } from '@pnp/common';
 import { Dialog } from '@microsoft/sp-dialog';
 import { TranslationService } from "../../services/TranslationService";
+import { textAreaProperties } from "office-ui-fabric-react";
 const pnpStorage = new PnPClientStorage();
+//const { htmlToText } = require('html-to-text');
 
 export class TranslationBar extends React.Component<ITranslationBarProps, ITranslationBarState> {
   private isError: boolean;
@@ -93,15 +95,15 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     //   );
     // }
 
-    if (!selectedLanguage) {
-      return (
-        <div className={styles.translationBar}>
-          <MessageBar messageBarType={MessageBarType.info}>
-            {"Could not determine the language of the page. It is either not supported by the API or it is not enabled by your adminitrator."}
-          </MessageBar>
-        </div>
-      );
-    }
+    //if (!selectedLanguage) {
+    //  return (
+    //    <div className={styles.translationBar}>
+    //      <MessageBar messageBarType={MessageBarType.info}>
+    //        {"Could not determine the language of the page. It is either not supported by the API or it is not enabled by your adminitrator."}
+    //      </MessageBar>
+    //    </div>
+    //  );
+    //}
 
     let currentMenuItems = [...availableLanguages];
     if (currentMenuItems.length <= 0) {
@@ -254,7 +256,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     console.log("cacheSelectedLanguage " + this.cacheSelectedLanguage.code);
     console.log("selectedLanguage " + language.code);
 
-   //if (this.cacheSelectedLanguage.code !== language.code) {
+    //if (this.cacheSelectedLanguage.code !== language.code) {
     if (true) {
 
       this.setState({ isTranslating: true });
@@ -268,8 +270,10 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
           this.pageUrl = clientSidePage.data.url;
 
+          //console.log(clientSidePage.data.toString());
+
           // Translate title
-          await this._translatePageTitle(clientSidePage.title, language.code);
+          //await this._translatePageTitle(clientSidePage.title, language.code);
           // console.log(JSON.stringify(clientSidePage.data));
 
           const top = sp.web.navigation.topNavigationBar;
@@ -290,7 +294,6 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
           }
 
 
-
           var textClientsideWebpartControls: ColumnControl<any>[] = [];
           clientSidePage.findControl((c) => {
             if (c instanceof ClientsideWebpart) {
@@ -300,12 +303,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
           });
           let j: number = 0;
           for (const control of textClientsideWebpartControls) {
-            console.log("Start-------------------------------");
-            /*if (j == 0) {*/
-              await this._translateWebPartTextControl(control as ClientsideWebpart, language.code);
-            //}
-            j = j + 1;
-            console.log("End-------------------------------");
+            await this._translateWebPartTextControl(control as ClientsideWebpart, language.code);
           }
 
           //await this._translateSiteHeaderTitle(language.code);
@@ -319,10 +317,24 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
             throw new Error('Error in Translation');
           }
 
-          console.log('completed');
-         
 
-          // await clientSidePage.save(true);
+          //console.log(clientSidePage.data);
+
+          await clientSidePage.save(true);
+
+          //const pageCopy2 = await clientSidePage.copy(sp.web, "newtestpage.aspx", "Dutch Page Title", true);
+          //pageCopy2.save();
+
+          //const target: IClientsidePage = await sp.web.addClientsidePage("mypage1.aspx");
+          //target.title = "test";
+          //target.save(true);
+          //await clientSidePage.copyTo(target);
+          //target.save(true);
+
+          console.log('page saved completed');
+          // console.log(clientSidePage.data);
+
+          //console.log(clientSidePage.data.toString());
 
         } catch (error) {
           console.dir(error);
@@ -336,41 +348,182 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
         //console.log(error.message);
         this.setState({ selectedLanguage: language, isTranslating: false, isTranslated: true, globalError: error.message });
       });
-   }
+    }
 
   }
 
   private _translateWebPartTextControl = async (textControl: ClientsideWebpart, languageCode: string): Promise<void> => {
+    console.log(' ');
+    console.log('Start _translate WebPartTextControl');
+    await this._translateControl(textControl.id, languageCode);
+    console.log('End _translate WebPartTextControl');
+  }
+
+  private _translateTextControl = async (textControl: ClientsideText, languageCode: string): Promise<void> => {
+    console.log(' ');
+    console.log('Start _translate TextControl');
+    await this._translateControl(textControl.id, languageCode);
+    console.log('End _translate TextControl');
+  }
+
+  //private _translateControl = async (textControl: ClientsideText, languageCode: string): Promise<void> => {
+  private _translateControl = async (controlid: string, languageCode: string): Promise<void> => {
     try {
-      console.log(' ');
-      console.log('Start _translateWebPartTextControl');
-      const element = document.querySelector(`[data-sp-feature-instance-id='${textControl.id}']`);
+
+      const element = document.querySelector(`[data-sp-feature-instance-id='${controlid}']`);
       if (element && element.firstChild) {
-        //console.log(element.innerHTML);
-        await this._translateHtmlElement(element.firstChild as Element, languageCode, textControl.id);
+
+        
+        //const textcontent = element.textContent;
+        //const allItems: any[] = await sp.web.lists.getByTitle("Translator Data List").items.getAll();
+        //const foundData = await this.CheckListData(allItems, textcontent, controlid, languageCode);
+        //if (foundData == undefined) {
+          await this._translateHtmlElement(element.firstChild as Element, languageCode, controlid);
+         // console.log('Adding data to list');
+          //await this.AddToList(controlid, languageCode, document.querySelector(`[data-sp-feature-instance-id='${controlid}']`).innerHTML, textcontent);
+        //}
+        //else {
+        //  document.querySelector(`[data-sp-feature-instance-id='${controlid}']`).innerHTML = foundData;
+        //}
+
+
       } else {
-        console.error(`Text web part control with id: '${textControl.id}' not found!`);
+        console.error(`Control with id: '${controlid}' not found!`);
       }
-      console.log('End _translateWebPartTextControl');
+
     }
     catch (e) {
       console.dir(e);
-      console.log('Error In _translateWebPartTextControl');
+      console.log('Error In _translateControl');
+      //console.log(e);
       this.isError = true;
     }
   }
 
+  private _translateHtmlElement = async (element: Element, languageCode: string, controlid: string): Promise<void> => {
+
+  
+    // console.log('Start _translateHtmlElement ' + element.innerHTML.length);
+    // If inner HTML >= 5000 the API call will fail
+    // translate each HMTL child node
+    if (element.innerHTML.length > 4999) {
+     
+      const childElements = [].slice.call(element.children);
+      if (childElements.length > 0) {
+        for (const childElement of childElements) {
+          await this._translateHtmlElement(childElement, languageCode, controlid);
+        }
+      } else {
+        // Fallback: translate each sentence individually if the
+        // the length of one html tag is longer then 4999 characters
+        const breakSentenceResult = await this.props.translationService.breakSentence(element.textContent);
+       
+        let startIndex, endIndex = 0;
+
+        const fullTextToTranslate = element.textContent;
+        for (const sentenceLenght of breakSentenceResult.sentLen) {
+          endIndex += sentenceLenght;
+          const sentenceToTranslate = fullTextToTranslate.substring(startIndex, endIndex);
+
+          //const translationResult = await this.props.translationService.translate(sentenceToTranslate, languageCode, false);
+          //const translatedText = translationResult.translations[0].text;
+
+          const translationResult = await this.props.translationService.translatetotext(sentenceToTranslate,sentenceToTranslate, languageCode, false);
+          const translatedText = translationResult;
+
+          element.textContent = element.textContent.replace(
+            sentenceToTranslate,
+            translatedText
+          );
+
+          //  console.log("translatedText1");
+
+          startIndex = endIndex;
+        }
+      }
+    } else {
+     
+      if (element.innerHTML != null) {
+        const elementtextcontent = element.textContent;
+        if (typeof elementtextcontent != 'undefined' && elementtextcontent) {
+          const innerHtml = element.innerHTML;
+          const cachecontent = elementtextcontent.replace(/(\r\n|\n|\r)/gm, "") + controlid;
+          const translationResult = await this.props.translationService.translatetotext(cachecontent,innerHtml, languageCode, true);
+          element.innerHTML = translationResult;
+        }
+      }
+    }
+    //console.log('End _translateHtmlElement');
+  }
+
+
+
+  private CheckListData = async (allItems: any[], textContent: string, id: string, languageCode: string): Promise<string> => {
+    //console.log("Checking data in list control id  : " + id + " To Language : " + languageCode);
+    let returntext: string = undefined;
+    try {
+      for (var i = 0; i < allItems.length; i++) {
+        if (allItems[i].ToLanguageCode == languageCode && allItems[i].ControlId == id && allItems[i].ElementContent == textContent) {
+          console.log("Data exists in List - Displaying data from list control id  " + id + " To Language : " + languageCode);
+          returntext = allItems[i].Translatedtext;
+          // console.log(returntext);
+          return returntext;
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      console.log("Error in CheckListData");
+    }
+    return returntext;
+  }
+
+  private AddToList = async (id: string, languageCode: string, translatedtext: string, elementtextcontent: string): Promise<void> => {
+
+    try {
+      const iar: IItemAddResult = await sp.web.lists.getByTitle("Translator Data List").items.add({
+        Title: "Title",
+        ControlId: id,
+        Translatedtext: translatedtext,
+        ToLanguageCode: languageCode,
+        FromLanguageCode: this.cacheSelectedLanguage.code,
+        ElementContent: elementtextcontent
+      });
+      console.log("Adding data To List From Language : " + this.cacheSelectedLanguage.code + " To Language : " + languageCode);
+    } catch (error) {
+      console.log(error);
+      console.log("Error in AddToList");
+    }
+  }
+
+
+
+
   private _translatePageTitle = async (title: string, languageCode): Promise<void> => {
     console.log('Start _translatePageTitle');
-    const translationResult: ITranslationResult = await this.props.translationService.translate(title, languageCode, false);
-    // get the title element
-    const pageTitle: Element = document.querySelector("div[data-automation-id='pageHeader'] div[role='heading']");
-    if (pageTitle) {
 
-      pageTitle.textContent = translationResult.translations[0].text;
-      console.log(pageTitle.textContent);
+    let found: boolean = false;
+    const pageTitle: Element = document.querySelector("div[data-automation-id='pageHeader'] div[role='heading']");
+    if (pageTitle != undefined) {
+      const allItems: any[] = await sp.web.lists.getByTitle("Translator Data List").items.getAll();
+      for (var i = 0; i < allItems.length; i++) {
+        if (allItems[i].ToLanguageCode == languageCode && allItems[i].ElementContent == pageTitle.innerHTML) {
+          console.log("Data exists in List - Displaying data from list title " + pageTitle.innerHTML + " To Language : " + languageCode);
+          document.querySelector("div[data-automation-id='pageHeader'] div[role='heading']").innerHTML = allItems[i].Translatedtext;
+          found = true;
+        }
+      }
+      if (found == false) {
+        const translationResult: ITranslationResult = await this.props.translationService.translate(pageTitle.innerHTML, languageCode, false);
+        document.querySelector("div[data-automation-id='pageHeader'] div[role='heading']").innerHTML = translationResult.translations[0].text;
+        console.log('Adding data to list');
+        await this.AddToList("controlid", languageCode, translationResult.translations[0].text, pageTitle.innerHTML);
+      }
     }
     console.log('End _translatePageTitle');
+  }
+
+  private _convertHTMLtoString = async (innerHTML): Promise<string> => {
+    return await innerHTML.replace(/<[^>]+>/g, '');
   }
 
   private _translatePageNav = async (navigation, languageCode): Promise<void> => {
@@ -396,91 +549,6 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
   }
 
 
-  private _translateTextControl = async (textControl: ClientsideText, languageCode: string): Promise<void> => {
-    try {
-      console.log('Start _translateTextControl');
-      const element = document.querySelector(`[data-sp-feature-instance-id='${textControl.id}']`);
-      // Translate element if found
-      if (element && element.firstChild) {
-        await this._translateHtmlElement(element.firstChild as Element, languageCode, textControl.id);
-      } else {
-        console.error(`Text control with id: '${textControl.id}' not found!`);
-      }
-      console.log('End _translateTextControl');
-    }
-    catch (e) {
-      console.dir(e);
-      console.log('Error In _translateTextControl');
-      //console.log(e);
-      this.isError = true;
-    }
-  }
-
-  private _translateHtmlElement = async (element: Element, languageCode: string,controlid:string): Promise<void> => {
-
-    console.log('Start _translateHtmlElement ' + element.innerHTML.length);
-    // If inner HTML >= 5000 the API call will fail
-    // translate each HMTL child node
-    if (element.innerHTML.length > 4999) {
-      const childElements = [].slice.call(element.children);
-      if (childElements.length > 0) {
-        for (const childElement of childElements) {
-          await this._translateHtmlElement(childElement, languageCode, controlid);
-        }
-      } else {
-        // Fallback: translate each sentence individually if the
-        // the length of one html tag is longer then 4999 characters
-        const breakSentenceResult = await this.props.translationService.breakSentence(element.textContent);
-
-        let startIndex, endIndex = 0;
-
-        const fullTextToTranslate = element.textContent;
-        for (const sentenceLenght of breakSentenceResult.sentLen) {
-          endIndex += sentenceLenght;
-          const sentenceToTranslate = fullTextToTranslate.substring(startIndex, endIndex);
-
-          const dataautomationid = element.attributes["data-automation-id"] !== undefined && element.attributes["data-automation-id"] !== null ? element.attributes["data-automation-id"].value : "nodataautomation";
-          const classname = element.className != null ? element.className : "noclassname";
-          const elementstyle = element.attributes["style"] !== undefined ? element.attributes["style"].value : "nostyle";
-          const translatedText = await this.GetTranslatorFromSPList(controlid, dataautomationid, classname, languageCode, sentenceToTranslate, elementstyle, sentenceToTranslate, false);
-          element.textContent = element.textContent.replace(
-            sentenceToTranslate,
-            translatedText
-          );
-
-          console.log("translatedText1");
-
-          startIndex = endIndex;
-        }
-      }
-    } else {
-
-      if (element.innerHTML != null) {
-        const elementtextcontent = element.textContent;
-        if (typeof elementtextcontent != 'undefined' && elementtextcontent) {
-        console.log("translatedText2-1");
-        const dataautomationid = element.attributes["data-automation-id"] !== undefined && element.attributes["data-automation-id"] !== null ? element.attributes["data-automation-id"].value : "nodataautomation";
-        const classname = element.className != null ? element.className : "noclassname";
-        const elementstyle = element.attributes["style"] !== undefined ? element.attributes["style"].value : "nostyle";
-        //console.log(element);
-        //const body: string = JSON.stringify([{ Text: element.outerHTML }]);
-        //console.log(body);
-        //console.log(element.textContent);
-        //console.log(dataautomationid);
-        //console.log(classname);
-        //console.log(controlid);
-        
-          const translatedText = await this.GetTranslatorFromSPList(controlid, dataautomationid, classname, languageCode, element.innerHTML, elementstyle,elementtextcontent, true);
-          element.innerHTML = translatedText;
-       
-        //console.log("-------------------------------");
-          console.log("translatedText2-2");
-        }
-      }
-    }
-    console.log('End _translateHtmlElement');
-  }
-
   private _translateSiteHeaderTitle = async (languageCode): Promise<void> => {
     try {
       console.log('Start _translateSiteHeaderTitle');
@@ -500,74 +568,6 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
       this.isError = true;
     }
   }
-
-  private async GetTranslatorFromSPList(elementid: string, dataautomationid: string, classname: string, languageCode: string, sentenceToTranslate: string, elementstyle: string, elementtextcontent:string,asHtml: boolean) {
-    const allItems: any[] = await sp.web.lists.getByTitle("Translator Data List").items.getAll();
-    let translatedText = await this.CheckListData(allItems, elementid, dataautomationid, classname, languageCode, sentenceToTranslate, elementstyle, elementtextcontent);
-    if (translatedText == undefined) {
-      const translationResult = await this.props.translationService.translate(sentenceToTranslate, languageCode, asHtml);
-      translatedText = translationResult.translations[0].text;
-      await this.AddToList(allItems, elementid, dataautomationid, classname, languageCode, sentenceToTranslate, translatedText, elementstyle, elementtextcontent);
-    }
-
-    //const translationResult = await this.props.translationService.translate(sentenceToTranslate, languageCode, false);
-    //const translatedText = translationResult.translations[0].text;
-    return translatedText;
-  }
-
-  //private async CheckListData(allItems: any[], textControl: ClientsideWebpart, languageCode: string, controltitle: string): string {
-  private CheckListData = async (allItems: any[], id: string, dataautomationid: string, classname: string, languageCode: string, controltitle: string, elementstyle: string, elementtextcontent: string): Promise<string> => {
-    console.log("Checking data in list From Language : " + this.cacheSelectedLanguage.code + " To Language : " + languageCode);
-    let returntext: string = undefined;
-    try {
-      for (var i = 0; i < allItems.length; i++) {
-        //if (this.cacheSelectedLanguage.code !== languageCode) {
-        //  if (allItems[i].FromLanguageCode == this.cacheSelectedLanguage.code && allItems[i].ToLanguageCode == languageCode && allItems[i].ElementContent == elementtextcontent
-        //    && allItems[i].DataAutomationId == dataautomationid && allItems[i].ClassName == classname && allItems[i].ControlId == id && allItems[i].ElementStyle == elementstyle) {
-        //    console.log("Data exists in List - Displaying data from list");
-        //    returntext = allItems[i].Translatedtext;
-        //  }
-        //}
-        //else {
-          if (allItems[i].ToLanguageCode == languageCode && allItems[i].ElementContent == elementtextcontent
-            && allItems[i].DataAutomationId == dataautomationid && allItems[i].ClassName == classname && allItems[i].ControlId == id && allItems[i].ElementStyle == elementstyle) {
-            console.log("Data exists in List - Displaying data from list");
-            returntext = allItems[i].Translatedtext;
-
-            return returntext;
-          }
-        //}
-      }
-    } catch (error) {
-      console.log(error);
-      console.log("Error in CheckListData");
-    }
-    return returntext;
-  }
-
-  private AddToList = async (allItems: any[], id: string, dataautomationid: string, classname: string, languageCode: string, controltitle: string, translatedtext: string, elementstyle: string, elementtextcontent: string): Promise<void> => {
-    
-    try {
-      const iar: IItemAddResult = await sp.web.lists.getByTitle("Translator Data List").items.add({
-        Title: "Title",
-        PageName: "HomePage",//this.pageUrl,
-        ControlId: id,
-        PropertyName: controltitle,
-        Translatedtext: translatedtext,
-        ToLanguageCode: languageCode,
-        FromLanguageCode: this.cacheSelectedLanguage.code,
-        DataAutomationId: dataautomationid,
-        ClassName: classname,
-        ElementStyle: elementstyle,
-        ElementContent: elementtextcontent
-      });
-      console.log("Adding data To List From Language : " + this.cacheSelectedLanguage.code + " To Language : " + languageCode);
-    } catch (error) {
-      console.log(error);
-      console.log("Error in AddToList");
-    }
-  }
-
 
 
 

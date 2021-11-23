@@ -2,7 +2,8 @@
 #Add-PSSnapin Microsoft.Sharepoint.Powershell
  
 $WebURL = "https://8p5g5n.sharepoint.com"
-$ListName="Translator Data List"
+#$ListName="Translator Data List"
+$ListName="CacheList"
 #$Cred = Get-Credential
  
 Try {

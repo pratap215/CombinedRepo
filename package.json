@@ -20,6 +20,9 @@
     "@pnp/sp": "^2.10.0",
     "@types/es6-promise": "0.0.33",
     "@types/webpack-env": "1.13.1",
+    "html-to-text": "^8.1.0",
+    "node-ts-cache": "^4.4.0",
+    "node-ts-cache-storage-memory": "^4.4.0",
     "office-ui-fabric-react": "^6.189.2"
   },
   "devDependencies": {
