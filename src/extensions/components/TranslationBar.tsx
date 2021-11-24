@@ -303,7 +303,9 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
           });
           let j: number = 0;
           for (const control of textClientsideWebpartControls) {
-            await this._translateWebPartTextControl(control as ClientsideWebpart, language.code);
+           
+              //await this._translateWebPartTextControl(control as ClientsideWebpart, language.code);
+           
           }
 
           //await this._translateSiteHeaderTitle(language.code);
@@ -373,14 +375,14 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
       const element = document.querySelector(`[data-sp-feature-instance-id='${controlid}']`);
       if (element && element.firstChild) {
 
-        
+
         //const textcontent = element.textContent;
         //const allItems: any[] = await sp.web.lists.getByTitle("Translator Data List").items.getAll();
         //const foundData = await this.CheckListData(allItems, textcontent, controlid, languageCode);
         //if (foundData == undefined) {
-          await this._translateHtmlElement(element.firstChild as Element, languageCode, controlid);
-         // console.log('Adding data to list');
-          //await this.AddToList(controlid, languageCode, document.querySelector(`[data-sp-feature-instance-id='${controlid}']`).innerHTML, textcontent);
+        await this._translateHtmlElement(element.firstChild as Element, languageCode, controlid);
+        // console.log('Adding data to list');
+        //await this.AddToList(controlid, languageCode, document.querySelector(`[data-sp-feature-instance-id='${controlid}']`).innerHTML, textcontent);
         //}
         //else {
         //  document.querySelector(`[data-sp-feature-instance-id='${controlid}']`).innerHTML = foundData;
@@ -402,12 +404,12 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
   private _translateHtmlElement = async (element: Element, languageCode: string, controlid: string): Promise<void> => {
 
-  
+
     // console.log('Start _translateHtmlElement ' + element.innerHTML.length);
     // If inner HTML >= 5000 the API call will fail
     // translate each HMTL child node
     if (element.innerHTML.length > 4999) {
-     
+
       const childElements = [].slice.call(element.children);
       if (childElements.length > 0) {
         for (const childElement of childElements) {
@@ -417,7 +419,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
         // Fallback: translate each sentence individually if the
         // the length of one html tag is longer then 4999 characters
         const breakSentenceResult = await this.props.translationService.breakSentence(element.textContent);
-       
+
         let startIndex, endIndex = 0;
 
         const fullTextToTranslate = element.textContent;
@@ -428,7 +430,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
           //const translationResult = await this.props.translationService.translate(sentenceToTranslate, languageCode, false);
           //const translatedText = translationResult.translations[0].text;
 
-          const translationResult = await this.props.translationService.translatetotext(sentenceToTranslate,sentenceToTranslate, languageCode, false);
+          const translationResult = await this.props.translationService.translatetotext(sentenceToTranslate, sentenceToTranslate, languageCode, false);
           const translatedText = translationResult;
 
           element.textContent = element.textContent.replace(
@@ -442,13 +444,13 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
         }
       }
     } else {
-     
+
       if (element.innerHTML != null) {
         const elementtextcontent = element.textContent;
         if (typeof elementtextcontent != 'undefined' && elementtextcontent) {
           const innerHtml = element.innerHTML;
           const cachecontent = elementtextcontent.replace(/(\r\n|\n|\r)/gm, "") + controlid;
-          const translationResult = await this.props.translationService.translatetotext(cachecontent,innerHtml, languageCode, true);
+          const translationResult = await this.props.translationService.translatetotext(cachecontent, innerHtml, languageCode, true);
           element.innerHTML = translationResult;
         }
       }

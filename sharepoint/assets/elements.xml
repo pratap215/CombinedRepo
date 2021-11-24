@@ -4,6 +4,6 @@
         Title="MachineTranslationExtension"
         Location="ClientSideExtension.ApplicationCustomizer"
         ClientSideComponentId="aa40cc51-6498-4c01-91d4-b5f8d2fe1e8b"
-        ClientSideComponentProperties="{&quot;preAllocatedApplicationCustomizerTopHeight&quot;:&quot;40&quot;,&quot;supportedLanguages&quot;:[&quot;en&quot;,&quot;de&quot;,&quot;zh-Hans&quot;],&quot;translatorApiKey&quot;:&quot;ecfce012932a4bb89d2b277299b6e2f5&quot;}">
+        ClientSideComponentProperties="{&quot;preAllocatedApplicationCustomizerTopHeight&quot;:&quot;40&quot;,&quot;supportedLanguages&quot;:[&quot;en&quot;,&quot;de&quot;,&quot;zh-Hans&quot;],&quot;translatorApiKey&quot;:&quot;3f272905281e48cc9e539d881729dab2&quot;}">
     </CustomAction>
 </Elements>

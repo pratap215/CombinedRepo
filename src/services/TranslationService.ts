@@ -142,6 +142,8 @@ export class TranslationService implements ITranslationService {
         headers: requestHeaders
       };
 
+      console.log(`${environment.config.cacheUrl}GetCacheData?cacheKey=${cachekey}`);
+
       await httpClient
         .get(
           `${environment.config.cacheUrl}GetCacheData?cacheKey=${cachekey}`,
