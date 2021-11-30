@@ -45,10 +45,8 @@ export class TranslationService implements ITranslationService {
         .then((response: HttpClientResponse): Promise<any[]> => {
           return response.json();
         }).then((languages: any): void => {
-          console.log("languages");
-          console.log(languages);
           translatorLanguages = languages.dictionary;
-          console.log("return translatorLanguages1");
+         
         });
     } catch (e) {
       console.log(e);
@@ -57,11 +55,11 @@ export class TranslationService implements ITranslationService {
     
 
     try {
-      console.log("return translatorLanguages2");
+     
       const languages: ILanguage[] = supportedLanguages.map((languageCode: string) => {
-        console.log("return translatorLanguages3");
+      
         if (translatorLanguages[languageCode]) {
-          console.log(languageCode);
+          //console.log(languageCode);
         return {
           label: translatorLanguages[languageCode].nativeName,
           code: languageCode
@@ -83,8 +81,6 @@ export class TranslationService implements ITranslationService {
     const httpClient = this.httpClient;
     let dl: IDetectedLanguage = null;
     const body: string = JSON.stringify({ Text: text });
-
-    console.log(" indetectLanguage");
 
     try {
       const requestHeaders1: Headers = new Headers();
@@ -113,7 +109,7 @@ export class TranslationService implements ITranslationService {
     return dl;
   }
 
-  public async breakSentence(sourceText: string): Promise<IBreakSentenceResult> {
+  public async breakSentence_new(sourceText: string): Promise<IBreakSentenceResult> {
     const httpClient = this.httpClient;
     let bsentence: IBreakSentenceResult = null;
 
@@ -133,15 +129,9 @@ export class TranslationService implements ITranslationService {
           body: body
         })
         .then((response: HttpClientResponse): Promise<any[]> => {
-          // const detectLanguageInfo: IDetectedLanguage[] =  response.json();
           return response.json();
-          // return detectLanguageInfo;
         }).then((data: any): void => {
-
           bsentence = data;
-          
-
-
         });
     } catch (e) {
       console.log(e);
@@ -251,8 +241,6 @@ export class TranslationService implements ITranslationService {
       return null;
     }
   }
-
-
 
   public async detectLanguageold(text: string): Promise<IDetectedLanguage> {
     const httpClient = this.httpClient;
@@ -378,7 +366,7 @@ export class TranslationService implements ITranslationService {
 
   //}
 
-  public async breakSentenceold(sourceText: string): Promise<IBreakSentenceResult> {
+  public async breakSentence(sourceText: string): Promise<IBreakSentenceResult> {
     const httpClient = this.httpClient;
     const path: string = `breaksentence?api-version=3.0`;
 
