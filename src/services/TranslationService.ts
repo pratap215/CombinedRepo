@@ -28,216 +28,196 @@ export class TranslationService implements ITranslationService {
 
   public async getAvailableLanguages(supportedLanguages: string[]): Promise<ILanguage[]> {
     const httpClient = this.httpClient;
-    const path: string = "languages?api-version=3.0&scope=dictionary";
+    let translatorLanguages: IDictionary<ITranslatorLanguage>;
 
-    const result = await httpClient.get(
-      `https://${this.host}/${path}`,
-      new HttpClientConfiguration({}),
-      { headers: this.headers }
-    );
-
-    if (!result.ok) {
-      const resultData: any = await result.json();
-      throw new Error(resultData.error.message);
-    }
-
-    const translatorLanguages: IDictionary<ITranslatorLanguage> = (await result.json()).dictionary;
-    const languages: ILanguage[] = supportedLanguages.map((languageCode: string) => {
-      if (translatorLanguages[languageCode]) {
-        return {
-          label: translatorLanguages[languageCode].nativeName,
-          code: languageCode
-        };
-      }
-    });
-
-    return languages;
-  }
-
-  public async detectLanguage(text: string): Promise<IDetectedLanguage> {
-    const httpClient = this.httpClient;
-    const path: string = "detect?api-version=3.0";
-
-    const body: string = JSON.stringify([{ Text: text }]);
-
-    const result = await httpClient.post(
-      `https://${this.host}/${path}`,
-      new HttpClientConfiguration({}),
-      {
-        headers: this.headers,
-        body: body
-      }
-    );
-
-    if (!result.ok) {
-      const resultData: any = await result.json();
-      throw new Error(resultData.error.message);
-    }
-
-    const detectLanguageInfo: IDetectedLanguage[] = await result.json();
-    if (detectLanguageInfo.some((langInfo: IDetectedLanguage) => langInfo.score >= 0.8 && langInfo.isTranslationSupported)) {
-      return detectLanguageInfo.filter((langInfo: IDetectedLanguage) => langInfo.score >= 0.8 && langInfo.isTranslationSupported)[0];
-    }
-
-    return null;
-  }
-
-
-  private CheckListData = async (cachekey: string): Promise<string> => {
-    let returntext: string = undefined;
-    try {
-      const allItems: any[] = await sp.web.lists.getByTitle("CacheList").items.getAll();
-      for (var i = 0; i < allItems.length; i++) {
-        if (allItems[i].cachekey == cachekey) {
-          return allItems[i].cachevalue;
-        }
-      }
-    } catch (error) {
-      console.log(error);
-      console.log("Error in CheckListData");
-    }
-    return returntext;
-  }
-
-  private AddToList = async (cachekey: string, cachevalue: string): Promise<void> => {
-
-    try {
-      await sp.web.lists.getByTitle("CacheList").items.add({
-        Title: "Title",
-        cachekey: cachekey,
-        cachevalue: cachevalue,
-
-      });
-    } catch (error) {
-      console.log(error);
-      console.log("Error in AddToList");
-    }
-  }
-
-  public async translatetotext(elementtextcontent: string, sourceText: string, languageCode: string, asHtml: boolean): Promise<string> {
-    const httpClient = this.httpClient;
-
-    const cachekey = elementtextcontent.replace(/[^a-zA-Z0-9]/g, '').trim() + languageCode;
-    let cacheData = "novalue";
-
-    //const cacheurl = "http://localhost:8585/api/RedisCache/GetCacheData?cacheKey=";
-
-    //const ckey = "test";
-
-    //const cachegetresult = await httpClient.get(
-    //  `http://localhost:8585/api/RedisCache/GetCacheData?cacheKey=test`,
-    //  new HttpClientConfiguration({}),
-    //  { headers: this.headers }
-    //);
-
-    // console.log(cachegetresult);
-
-    //`https://localhost:44352/api/RedisCache/GetCacheData?cacheKey=${cachekey}`,
-    try {
-
-      const requestHeaders: Headers = new Headers();
-      requestHeaders.append("method", "GET");
-
-      const postOptions: IHttpClientOptions = {
-        headers: requestHeaders
-      };
-
-      console.log(`${environment.config.cacheUrl}GetCacheData?cacheKey=${cachekey}`);
-
-      await httpClient
-        .get(
-          `${environment.config.cacheUrl}GetCacheData?cacheKey=${cachekey}`,
-          HttpClient.configurations.v1, postOptions
-        )
-        .then((response: HttpClientResponse): Promise<any> => {
-          return response.json();
-        })
-        .then((data: any): void => {
-          cacheData = data;
-        });
-
-    } catch (e) {
-      console.log(e);
-      console.log("Error in get api call");
-    }
-
-
-    if (cacheData !== "novalue") {
-      console.log("Data From [Cache API]");
-      return cacheData;
-    }
-
-    //const foundData = await this.CheckListData(cachekey);
-    //if (foundData != undefined) {
-    //  console.log('In translate code getting data from [CACHE] ' + languageCode);
-    //  return foundData;
-    //}
-
-    if (cacheData == "novalue") {
-
-      const path: string = `translate?api-version=3.0&to=${languageCode}&textType=${asHtml ? "html" : "plain"}`;
-      const body: string = JSON.stringify([{ Text: sourceText }]);
-
-      const result = await httpClient.post(
-        `https://${this.host}/${path}`,
-        new HttpClientConfiguration({}),
-        {
-          headers: this.headers,
-          body: body
-        }
-      );
-
-      if (!result.ok) {
-        const resultData: any = await result.json();
-        throw new Error(resultData.error.message);
-      }
-
-      const translationInfo: ITranslationResult[] = await result.json();
-
-      if (translationInfo.length > 0) {
-        // if (foundData == undefined) {
-        //await this.AddToList(cachekey, translationInfo[0].translations[0].text);
-        //}
-        await this.addCache(cachekey, translationInfo[0].translations[0].text);
-        console.log('Data from [Translator API] ' + cachekey + " " + languageCode);
-        return translationInfo[0].translations[0].text;
-      } else {
-        return null;
-      }
-
-    }
-   
-
-  }
-
-  private async addCache(cachekey: string, cachevalue: string): Promise<void> {
-    const httpClient = this.httpClient;
-    // .fetch(`https://localhost:44352/api/RedisCache/SetCacheData`,
     try {
       const requestHeaders1: Headers = new Headers();
       requestHeaders1.append("Content-type", "application/json");
       requestHeaders1.append("accept", "application/json");
 
       await httpClient
-        .fetch(`${environment.config.cacheUrl}SetCacheData`,
+        .fetch(`${environment.config.translatorServiceUrl}GetAvailableLanguages`,
+          HttpClient.configurations.v1, {
+          method: "POST",
+          headers: requestHeaders1
+          
+        })
+        .then((response: HttpClientResponse): Promise<any[]> => {
+          return response.json();
+        }).then((languages: any): void => {
+          console.log("languages");
+          console.log(languages);
+          translatorLanguages = languages.dictionary;
+          console.log("return translatorLanguages1");
+        });
+    } catch (e) {
+      console.log(e);
+      console.log("Error in post api call getAvailableLanguages");
+    }
+    
+
+    try {
+      console.log("return translatorLanguages2");
+      const languages: ILanguage[] = supportedLanguages.map((languageCode: string) => {
+        console.log("return translatorLanguages3");
+        if (translatorLanguages[languageCode]) {
+          console.log(languageCode);
+        return {
+          label: translatorLanguages[languageCode].nativeName,
+          code: languageCode
+        };
+      }
+    });
+     
+      return languages;
+      
+    } catch (e) {
+      console.log(e);
+      console.log("Error in post api call languages");
+    }
+
+    return null;
+  }
+
+  public async detectLanguage(text: string): Promise<IDetectedLanguage> {
+    const httpClient = this.httpClient;
+    let dl: IDetectedLanguage = null;
+    const body: string = JSON.stringify({ Text: text });
+
+    console.log(" indetectLanguage");
+
+    try {
+      const requestHeaders1: Headers = new Headers();
+      requestHeaders1.append("Content-type", "application/json");
+      requestHeaders1.append("accept", "application/json");
+
+      await httpClient
+        .fetch(`${environment.config.translatorServiceUrl}DetectLanguage`,
           HttpClient.configurations.v1, {
           method: "POST",
           headers: requestHeaders1,
-          body: JSON.stringify({ cacheKey: cachekey, cachevalue: cachevalue })
+          body: body
+        })
+        .then((response: HttpClientResponse): Promise<any[]> => {
+         // const detectLanguageInfo: IDetectedLanguage[] =  response.json();
+          return response.json();
+         // return detectLanguageInfo;
+        }).then((detectLanguageInfo: any): void => {
+
+          dl = detectLanguageInfo;
+        });
+    } catch (e) {
+      console.log(e);
+      console.log("Error in post api call detectLanguage");
+    }
+    return dl;
+  }
+
+  public async breakSentence(sourceText: string): Promise<IBreakSentenceResult> {
+    const httpClient = this.httpClient;
+    let bsentence: IBreakSentenceResult = null;
+
+
+    const body: string = JSON.stringify({ Text: sourceText });
+
+    try {
+      const requestHeaders1: Headers = new Headers();
+      requestHeaders1.append("Content-type", "application/json");
+      requestHeaders1.append("accept", "application/json");
+
+      await httpClient
+        .fetch(`${environment.config.translatorServiceUrl}BreakSentence`,
+          HttpClient.configurations.v1, {
+          method: "POST",
+          headers: requestHeaders1,
+          body: body
+        })
+        .then((response: HttpClientResponse): Promise<any[]> => {
+          // const detectLanguageInfo: IDetectedLanguage[] =  response.json();
+          return response.json();
+          // return detectLanguageInfo;
+        }).then((data: any): void => {
+
+          bsentence = data;
+          
+
+
+        });
+    } catch (e) {
+      console.log(e);
+      console.log("Error in post api call breakSentence");
+    }
+
+    return bsentence;
+
+    //const breakSentenceInfo: IBreakSentenceResult[] = await result.json();
+
+    //if (breakSentenceInfo.length > 0) {
+    //  return breakSentenceInfo[0];
+    //} else {
+    //  return null;
+    //}
+
+  }
+
+  public async translatetotext(elementtextcontent: string, sourceText: string, languageCode: string, asHtml: boolean): Promise<string> {
+    const httpClient = this.httpClient;
+
+    const cachekey = `${environment.config.environmentName}` + elementtextcontent.replace(/[^a-zA-Z0-9]/g, '').trim() + languageCode;
+    let cacheData = "novalue";
+
+    try {
+      const requestHeaders1: Headers = new Headers();
+      requestHeaders1.append("Content-type", "application/json");
+      requestHeaders1.append("accept", "application/json");
+
+      await httpClient
+        .fetch(`${environment.config.translatorServiceUrl}TranslateData`,
+          HttpClient.configurations.v1, {
+          method: "POST",
+          headers: requestHeaders1,
+            body: JSON.stringify({ elementtextcontent: cachekey, sourceText: sourceText, languageCode: languageCode, asHtml: asHtml })
         })
         .then((response: HttpClientResponse): Promise<any[]> => {
           return response.json();
         }).then((data: any): void => {
-          //console.log(data);
-          console.log("Success from Post api call");
-
+          cacheData = data;
         });
     } catch (e) {
       console.log(e);
       console.log("Error in post api call");
     }
-
+    return cacheData;
   }
+
+  //private async addCache(cachekey: string, cachevalue: string): Promise<void> {
+  //  const httpClient = this.httpClient;
+  //  // .fetch(`https://localhost:44352/api/RedisCache/SetCacheData`,
+  //  try {
+  //    const requestHeaders1: Headers = new Headers();
+  //    requestHeaders1.append("Content-type", "application/json");
+  //    requestHeaders1.append("accept", "application/json");
+
+  //    await httpClient
+  //      .fetch(`${environment.config.cacheUrl}SetCacheData`,
+  //        HttpClient.configurations.v1, {
+  //        method: "POST",
+  //        headers: requestHeaders1,
+  //        body: JSON.stringify({ cacheKey: cachekey, cachevalue: cachevalue })
+  //      })
+  //      .then((response: HttpClientResponse): Promise<any[]> => {
+  //        return response.json();
+  //      }).then((data: any): void => {
+  //        //console.log(data);
+  //        console.log("Success from Post api call");
+
+  //      });
+  //  } catch (e) {
+  //    console.log(e);
+  //    console.log("Error in post api call");
+  //  }
+
+  //}
 
   public async translate(sourceText: string, languageCode: string, asHtml: boolean): Promise<ITranslationResult> {
     const httpClient = this.httpClient;
@@ -272,7 +252,133 @@ export class TranslationService implements ITranslationService {
     }
   }
 
-  public async breakSentence(sourceText: string): Promise<IBreakSentenceResult> {
+
+
+  public async detectLanguageold(text: string): Promise<IDetectedLanguage> {
+    const httpClient = this.httpClient;
+    const path: string = "detect?api-version=3.0";
+
+    const body: string = JSON.stringify([{ Text: text }]);
+
+    const result = await httpClient.post(
+      `https://${this.host}/${path}`,
+      new HttpClientConfiguration({}),
+      {
+        headers: this.headers,
+        body: body
+      }
+    );
+
+    if (!result.ok) {
+      const resultData: any = await result.json();
+      throw new Error(resultData.error.message);
+    }
+
+    const detectLanguageInfo: IDetectedLanguage[] = await result.json();
+    if (detectLanguageInfo.some((langInfo: IDetectedLanguage) => langInfo.score >= 0.8 && langInfo.isTranslationSupported)) {
+      return detectLanguageInfo.filter((langInfo: IDetectedLanguage) => langInfo.score >= 0.8 && langInfo.isTranslationSupported)[0];
+    }
+
+    return null;
+  }
+
+  //public async translatetotextold(elementtextcontent: string, sourceText: string, languageCode: string, asHtml: boolean): Promise<string> {
+  //  const httpClient = this.httpClient;
+
+  //  const cachekey = elementtextcontent.replace(/[^a-zA-Z0-9]/g, '').trim() + languageCode;
+  //  let cacheData = "novalue";
+
+  //  //const cacheurl = "http://localhost:8585/api/RedisCache/GetCacheData?cacheKey=";
+
+  //  //const ckey = "test";
+
+  //  //const cachegetresult = await httpClient.get(
+  //  //  `http://localhost:8585/api/RedisCache/GetCacheData?cacheKey=test`,
+  //  //  new HttpClientConfiguration({}),
+  //  //  { headers: this.headers }
+  //  //);
+
+  //  // console.log(cachegetresult);
+
+  //  //`https://localhost:44352/api/RedisCache/GetCacheData?cacheKey=${cachekey}`,
+  //  //try {
+
+  //  //  const requestHeaders: Headers = new Headers();
+  //  //  requestHeaders.append("method", "GET");
+
+  //  //  const postOptions: IHttpClientOptions = {
+  //  //    headers: requestHeaders
+  //  //  };
+
+  //  //  console.log(`${environment.config.cacheUrl}GetCacheData?cacheKey=${cachekey}`);
+
+  //  //  await httpClient
+  //  //    .get(
+  //  //      `${environment.config.cacheUrl}GetCacheData?cacheKey=${cachekey}`,
+  //  //      HttpClient.configurations.v1, postOptions
+  //  //    )
+  //  //    .then((response: HttpClientResponse): Promise<any> => {
+  //  //      return response.json();
+  //  //    })
+  //  //    .then((data: any): void => {
+  //  //      cacheData = data;
+  //  //    });
+
+  //  //} catch (e) {
+  //  //  console.log(e);
+  //  //  console.log("Error in get api call");
+  //  //}
+
+
+  //  //if (cacheData !== "novalue") {
+  //  //  console.log("Data From [Cache API]");
+  //  //  return cacheData;
+  //  //}
+
+  //  //const foundData = await this.CheckListData(cachekey);
+  //  //if (foundData != undefined) {
+  //  //  console.log('In translate code getting data from [CACHE] ' + languageCode);
+  //  //  return foundData;
+  //  //}
+
+  //  if (cacheData == "novalue") {
+
+  //    const path: string = `translate?api-version=3.0&to=${languageCode}&textType=${asHtml ? "html" : "plain"}`;
+  //    const body: string = JSON.stringify([{ Text: sourceText }]);
+
+  //    const result = await httpClient.post(
+  //      `https://${this.host}/${path}`,
+  //      new HttpClientConfiguration({}),
+  //      {
+  //        headers: this.headers,
+  //        body: body
+  //      }
+  //    );
+
+  //    if (!result.ok) {
+  //      const resultData: any = await result.json();
+  //      throw new Error(resultData.error.message);
+  //    }
+
+  //    const translationInfo: ITranslationResult[] = await result.json();
+
+  //    if (translationInfo.length > 0) {
+  //      // if (foundData == undefined) {
+  //      //await this.AddToList(cachekey, translationInfo[0].translations[0].text);
+  //      //}
+  //      await this.addCache(cachekey, translationInfo[0].translations[0].text);
+  //      console.log('Data from [Translator API] ' + cachekey + " " + languageCode);
+  //      return translationInfo[0].translations[0].text;
+  //    } else {
+  //      return null;
+  //    }
+
+  //  }
+
+
+  //}
+
+  public async breakSentenceold(sourceText: string): Promise<IBreakSentenceResult> {
     const httpClient = this.httpClient;
     const path: string = `breaksentence?api-version=3.0`;
 
@@ -300,4 +406,34 @@ export class TranslationService implements ITranslationService {
       return null;
     }
   }
+
+  public async getAvailableLanguages_old(supportedLanguages: string[]): Promise<ILanguage[]> {
+    const httpClient = this.httpClient;
+    const path: string = "languages?api-version=3.0&scope=dictionary";
+
+    const result = await httpClient.get(
+      `https://${this.host}/${path}`,
+      new HttpClientConfiguration({}),
+      { headers: this.headers }
+    );
+
+    if (!result.ok) {
+      const resultData: any = await result.json();
+      throw new Error(resultData.error.message);
+    }
+
+    const translatorLanguages: IDictionary<ITranslatorLanguage> = (await result.json()).dictionary;
+    const languages: ILanguage[] = supportedLanguages.map((languageCode: string) => {
+      if (translatorLanguages[languageCode]) {
+        return {
+          label: translatorLanguages[languageCode].nativeName,
+          code: languageCode
+        };
+      }
+    });
+
+    return languages;
+  }
+
+
 }

@@ -1,5 +1,7 @@
 ﻿#Parameters
+#https://dwpstage.sharepoint.com
 $AppCatalogURL = "https://8p5g5n.sharepoint.com/sites/appcatalog"
+#$AppCatalogURL = "https://dwpstage.sharepoint.com/sites/appcatalog"
 $AppFilePath = "C:\Users\adminpen.arpula\spfxclientsideprojects\react-application-machine-translations\sharepoint\solution\machine-translation-extension.sppkg"
  
 #Connect to SharePoint Online App Catalog site

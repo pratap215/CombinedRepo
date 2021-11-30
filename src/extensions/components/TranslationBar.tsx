@@ -29,6 +29,7 @@ import { PnPClientStorage, dateAdd } from '@pnp/common';
 import { Dialog } from '@microsoft/sp-dialog';
 import { TranslationService } from "../../services/TranslationService";
 import { textAreaProperties } from "office-ui-fabric-react";
+import { IContextInfo } from '@pnp/sp/sites';
 const pnpStorage = new PnPClientStorage();
 //const { htmlToText } = require('html-to-text');
 
@@ -253,11 +254,13 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
   private _onTranslate = (language: ILanguage): void => {
     this.cacheSelectedLanguage = pnpStorage.local.get("PnP_UserLanguageInfo");
 
-    console.log("cacheSelectedLanguage " + this.cacheSelectedLanguage.code);
-    console.log("selectedLanguage " + language.code);
+    //console.log("cacheSelectedLanguage " + this.cacheSelectedLanguage.code);
+    //console.log("selectedLanguage " + language.code);
 
     //if (this.cacheSelectedLanguage.code !== language.code) {
     if (true) {
+
+      
 
       this.setState({ isTranslating: true });
       pnpStorage.local.put('PnP_UserLanguageInfo', language, dateAdd(new Date(), 'hour', 10));
@@ -268,9 +271,13 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
         try {
 
-          this.pageUrl = clientSidePage.data.url;
+          //const oContext: IContextInfo = await sp.site.getContextInfo();
 
-          //console.log(clientSidePage.data.toString());
+         
+          this.pageUrl = clientSidePage.data.url;
+          //
+         // const pageContext: any = (window as any)._spPageContextInfo;
+         
 
           // Translate title
           //await this._translatePageTitle(clientSidePage.title, language.code);
@@ -303,9 +310,9 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
           });
           let j: number = 0;
           for (const control of textClientsideWebpartControls) {
-           
-              //await this._translateWebPartTextControl(control as ClientsideWebpart, language.code);
-           
+
+            await this._translateWebPartTextControl(control as ClientsideWebpart, language.code);
+
           }
 
           //await this._translateSiteHeaderTitle(language.code);
@@ -375,19 +382,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
       const element = document.querySelector(`[data-sp-feature-instance-id='${controlid}']`);
       if (element && element.firstChild) {
 
-
-        //const textcontent = element.textContent;
-        //const allItems: any[] = await sp.web.lists.getByTitle("Translator Data List").items.getAll();
-        //const foundData = await this.CheckListData(allItems, textcontent, controlid, languageCode);
-        //if (foundData == undefined) {
         await this._translateHtmlElement(element.firstChild as Element, languageCode, controlid);
-        // console.log('Adding data to list');
-        //await this.AddToList(controlid, languageCode, document.querySelector(`[data-sp-feature-instance-id='${controlid}']`).innerHTML, textcontent);
-        //}
-        //else {
-        //  document.querySelector(`[data-sp-feature-instance-id='${controlid}']`).innerHTML = foundData;
-        //}
-
 
       } else {
         console.error(`Control with id: '${controlid}' not found!`);
