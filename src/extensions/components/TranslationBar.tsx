@@ -305,7 +305,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
           });
 
           for (const control of textControls) {
-            //await this._translateTextControl(control as ClientsideText, language.code);
+            await this._translateTextControl(control as ClientsideText, language.code);
           }
          
           for (const control of textClientsideWebpartControls) {
@@ -368,7 +368,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
       const element = document.querySelector(`[data-sp-feature-instance-id='${controlid}']`);
       if (element && element.firstChild) {
-       // await this._translateHtmlElement(element.firstChild as Element, languageCode, controlid);
+        await this._translateHtmlElement(element.firstChild as Element, languageCode, controlid);
       } else {
         console.error(`_translateControl => Control with id: '${controlid}' not found!`);
         await this._translateControlwithid(controlid, languageCode);
@@ -388,7 +388,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
       console.log('Start _translateControlwithid');
       const element = document.querySelector(`[id='${controlid}']`);
       if (element && element.firstChild) {
-        // await this._translateHtmlElement(element.firstChild as Element, languageCode, controlid);
+         await this._translateHtmlElement(element.firstChild as Element, languageCode, controlid);
       } else {
         console.error(`_translateControlwithid=> Control with id: '${controlid}' not found!`);
       }
