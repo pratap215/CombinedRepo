@@ -294,22 +294,20 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
           if (c instanceof ClientsideText) {
             clientsideControls.push(c);
           }
-          return false;
-        });
-
-        clientSidePage.findControl((c) => {
-          if (c instanceof ClientsideWebpart) {
-            console.log(c);
+          else if (c instanceof ClientsideWebpart) {
             clientsideControls.push(c);
-
           }
           return false;
         });
 
+        //const elementlist = document.querySelectorAll(`[data-sp-feature-instance-id]`);
+        //elementlist.forEach(x =>
 
-        //for (const control of clientsideControls) {
-        //  await this._translateClientSideControl(control.id, language.code);
-        //}
+        // x.
+
+
+        //);
+
 
         //await this._translateSiteHeaderTitle(language.code);
 
