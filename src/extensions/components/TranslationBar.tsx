@@ -257,121 +257,138 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     //console.log("cacheSelectedLanguage " + this.cacheSelectedLanguage.code);
     //console.log("selectedLanguage " + language.code);
 
-    //if (this.cacheSelectedLanguage.code !== language.code) {
-    if (true) {
-
-      
-
-      this.setState({ isTranslating: true });
-      pnpStorage.local.put('PnP_UserLanguageInfo', language, dateAdd(new Date(), 'hour', 10));
-
-      const relativePageUrl: string = `${this.props.currentWebUrl}/SitePages/${this.state.pageItem["FileLeafRef"]}`;
-
-      sp.web.loadClientsidePage(relativePageUrl).then(async (clientSidePage: IClientsidePage) => {
-
-        try {
-
-          //const oContext: IContextInfo = await sp.site.getContextInfo();
-
-         
-          this.pageUrl = clientSidePage.data.url;
-          //
-         // const pageContext: any = (window as any)._spPageContextInfo;
-         
-
-          // Translate title
-          //await this._translatePageTitle(clientSidePage.title, language.code);
-          // console.log(JSON.stringify(clientSidePage.data));
-
-          const top = sp.web.navigation.topNavigationBar;
-          if (top != null && top.length > 0) {
-            //await this._translatePageNav(top.toString, language.code);
-          }
-          //Get all text controls
-          var textControls: ColumnControl<any>[] = [];
-          clientSidePage.findControl((c) => {
-            if (c instanceof ClientsideText) {
-              textControls.push(c);
-            }
-            return false;
-          });
-
-          var textClientsideWebpartControls: ColumnControl<any>[] = [];
-          clientSidePage.findControl((c) => {
-            if (c instanceof ClientsideWebpart) {
-              textClientsideWebpartControls.push(c);
-            }
-            return false;
-          });
-
-          for (const control of textControls) {
-            await this._translateTextControl(control as ClientsideText, language.code);
-          }
-         
-          for (const control of textClientsideWebpartControls) {
-            await this._translateWebPartTextControl(control as ClientsideWebpart, language.code);
-          }
-
-          //await this._translateSiteHeaderTitle(language.code);
 
 
-          this.setState({ isTranslating: false, isTranslated: true });
-          this._updateSelectedLanguage(language);
-
-          // await this._translateHorizontalMenu(language.code);
-          if (this.isError) {
-            throw new Error('Error in Translation');
-          }
 
 
-          //console.log(clientSidePage.data);
+    this.setState({ isTranslating: true });
+    pnpStorage.local.put('PnP_UserLanguageInfo', language, dateAdd(new Date(), 'hour', 10));
 
-          await clientSidePage.save(true);
+    const relativePageUrl: string = `${this.props.currentWebUrl}/SitePages/${this.state.pageItem["FileLeafRef"]}`;
 
-         
-          console.log('page saved ');
-         
+    var clientsideControls: ColumnControl<any>[] = [];
 
-        } catch (error) {
-          console.dir(error);
-          console.log('error in internal catch');
-          //console.log(error.message);
-          this.setState({ selectedLanguage: language, isTranslating: false, isTranslated: true, globalError: error.message });
+    sp.web.loadClientsidePage(relativePageUrl).then(async (clientSidePage: IClientsidePage) => {
+
+      try {
+
+        //const oContext: IContextInfo = await sp.site.getContextInfo();
+
+
+        this.pageUrl = clientSidePage.data.url;
+        //
+        // const pageContext: any = (window as any)._spPageContextInfo;
+
+
+        // Translate title
+        //await this._translatePageTitle(clientSidePage.title, language.code);
+        // console.log(JSON.stringify(clientSidePage.data));
+
+        const top = sp.web.navigation.topNavigationBar;
+        if (top != null && top.length > 0) {
+          //await this._translatePageNav(top.toString, language.code);
         }
-      }).catch((error: Error) => {
+        //Get all text controls
+        // var clientsideControls: ColumnControl<any>[] = [];
+        clientSidePage.findControl((c) => {
+          if (c instanceof ClientsideText) {
+            clientsideControls.push(c);
+          }
+          return false;
+        });
+
+        clientSidePage.findControl((c) => {
+          if (c instanceof ClientsideWebpart) {
+            console.log(c);
+            clientsideControls.push(c);
+
+          }
+          return false;
+        });
+
+
+        //for (const control of clientsideControls) {
+        //  await this._translateClientSideControl(control.id, language.code);
+        //}
+
+        //await this._translateSiteHeaderTitle(language.code);
+
+        await this._alltranslateClientSideControl(clientsideControls, language.code);
+
+        this.setState({ isTranslating: false, isTranslated: true });
+        this._updateSelectedLanguage(language);
+
+        // await this._translateHorizontalMenu(language.code);
+        if (this.isError) {
+          throw new Error('Error in Translation');
+        }
+
+
+        //console.log(clientSidePage.data);
+
+        await clientSidePage.save(true);
+
+
+        console.log('page saved ');
+
+
+      } catch (error) {
         console.dir(error);
-        console.log('error in outside catch');
+        console.log('error in internal catch');
         //console.log(error.message);
         this.setState({ selectedLanguage: language, isTranslating: false, isTranslated: true, globalError: error.message });
-      });
+      }
+
+
+    }).catch((error: Error) => {
+      console.dir(error);
+      console.log('error in outside catch');
+      //console.log(error.message);
+      this.setState({ selectedLanguage: language, isTranslating: false, isTranslated: true, globalError: error.message });
+    });
+
+
+  }
+
+  private _alltranslateClientSideControl = async (clientsideControls: ColumnControl<any>[], languageCode: string): Promise<void> => {
+
+    console.log('Start _alltranslateClientSideControl');
+    for (const control of clientsideControls) {
+      await this._translateControl(control.id, languageCode);
     }
-
+    console.log('End  _alltranslateClientSideControl');
   }
 
-  private _translateWebPartTextControl = async (textControl: ClientsideWebpart, languageCode: string): Promise<void> => {
-    console.log(' ');
-    console.log('Start _translate WebPartTextControl');
-    await this._translateControl(textControl.id, languageCode);
-    console.log('End _translate WebPartTextControl');
-  }
 
-  private _translateTextControl = async (textControl: ClientsideText, languageCode: string): Promise<void> => {
-    console.log(' ');
-    console.log('Start _translate TextControl');
-    await this._translateControl(textControl.id, languageCode);
-    console.log('End _translate TextControl');
-  }
+
 
   //private _translateControl = async (textControl: ClientsideText, languageCode: string): Promise<void> => {
   private _translateControl = async (controlid: string, languageCode: string): Promise<void> => {
-    try {
+    console.log(' ');
+    console.log("start  control id " + controlid);
+    let element: Element = null;
+    //(function () {
+    //  element = document.querySelector(`[data-sp-feature-instance-id='${controlid}']`);
+    //})();
 
-      const element = document.querySelector(`[data-sp-feature-instance-id='${controlid}']`);
+    //document.addEventListener("DOMContentLoaded", function () {
+    //  if (element == null) {
+    //    console.log("DOMContentLoaded");
+
+    //  }
+    //});
+
+
+
+    try {
+      element = document.querySelector(`[data-sp-feature-instance-id='${controlid}']`);
+      console.log(element);
       if (element && element.firstChild) {
         await this._translateHtmlElement(element.firstChild as Element, languageCode, controlid);
+        console.log("end  control id " + controlid);
       } else {
         console.error(`_translateControl => Control with id: '${controlid}' not found!`);
-        await this._translateControlwithid(controlid, languageCode);
+        //await this._translateControlwithid(controlid, languageCode);
       }
 
     }
@@ -381,14 +398,16 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
       //console.log(e);
       this.isError = true;
     }
+
   }
 
   private _translateControlwithid = async (controlid: string, languageCode: string): Promise<void> => {
     try {
       console.log('Start _translateControlwithid');
       const element = document.querySelector(`[id='${controlid}']`);
+      console.log(element);
       if (element && element.firstChild) {
-         await this._translateHtmlElement(element.firstChild as Element, languageCode, controlid);
+        await this._translateHtmlElement(element.firstChild as Element, languageCode, controlid);
       } else {
         console.error(`_translateControlwithid=> Control with id: '${controlid}' not found!`);
       }
@@ -467,14 +486,14 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
   private _translatePageTitle = async (title: string, languageCode): Promise<void> => {
     console.log('Start _translatePageTitle');
 
-   
+
     const pageTitle: Element = document.querySelector("div[data-automation-id='pageHeader'] div[role='heading']");
     if (pageTitle != undefined) {
 
       const translationResult = await this.props.translationService.translatetotext(pageTitle.innerHTML, pageTitle.innerHTML, languageCode, false);
       document.querySelector("div[data-automation-id='pageHeader'] div[role='heading']").innerHTML = translationResult;
 
-     
+
     }
     console.log('End _translatePageTitle');
   }
