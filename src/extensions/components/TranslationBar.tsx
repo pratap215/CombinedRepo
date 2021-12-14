@@ -22,13 +22,8 @@ import "@pnp/sp/features";
 import { ColumnControl, ClientsideText, ClientsideWebpart, IClientsidePage, ClientsidePageFromFile } from "@pnp/sp/clientside-pages";
 import { ITranslationResult } from "../../models/ITranslationResult";
 import { Navigation } from "@pnp/sp/navigation";
-import { SPHttpClient, SPHttpClientResponse, SPHttpClientConfiguration } from '@microsoft/sp-http';
 import { Guid } from "@microsoft/sp-core-library";
 import { Dialog } from '@microsoft/sp-dialog';
-
-import { ITranslationService } from "../../services/ITranslationService";
-import { TranslationService } from "../../services/TranslationService";
-import { environment } from '../../environments/environment';
 
 export class TranslationBar extends React.Component<ITranslationBarProps, ITranslationBarState> {
 
@@ -102,7 +97,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
       <div className={styles.translationBar}>
         <ActionButton
           className={styles.actionButton}
-          text={"Translate " + this._sPTranslationLanguage}
+          text={"Translate " }
           onClick={() => this._onTranslateCurrentPage()}
         />
       </div>
@@ -141,100 +136,99 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     (async () => {
       try {
 
-        
+        if (confirm('Are you sure you want to translate this page[' + this._pageName + ']')) {
 
-        const isValidTargetFile = await this.getTranslationPageMetaData();
+          const isValidTargetFile = await this.getTranslationPageMetaData();
 
-        console.log(this._targetPageurl);
+          console.log(this._targetPageurl);
 
-        if (isValidTargetFile == false) {
-          Dialog.alert('Not a Translated Page.Contact Admin');
-          return;
-        }
+          if (isValidTargetFile == false) {
+            Dialog.alert('Not a Translated Page.Contact Admin');
+            return;
+          }
 
-        const isValidSourceFile = await this.getSourcePageMetaData(this._sPTranslationSourceItemId);
+          const isValidSourceFile = await this.getSourcePageMetaData(this._sPTranslationSourceItemId);
 
-        if (isValidSourceFile == false) {
-          Dialog.alert('Original page not exists.Contact Admin');
-          return;
-        }
+          if (isValidSourceFile == false) {
+            Dialog.alert('Original page not exists.Contact Admin');
+            return;
+          }
 
-        console.log('Copying......... ');
-        // const sourceRelativePageUrl: string = '/SitePages/' + this._pageName;
-        const sourceRelativePageUrl: string = this._sourcePageurl;
-        let sourcepage: IClientsidePage = undefined;
-        try {
-          sourcepage = await ClientsidePageFromFile(sp.web.getFileByServerRelativeUrl(sourceRelativePageUrl));
-        } catch (error) {
-          console.dir(error);
-          console.log('source page not found ' + this._pageName);
-          Dialog.alert('Original page [' + this._pageName + '] not exists.Contact Admin');
-          return;
-        }
-        console.log('async/await source -> ', sourcepage);
+          console.log('Copying......... ');
+          // const sourceRelativePageUrl: string = '/SitePages/' + this._pageName;
+          const sourceRelativePageUrl: string = this._sourcePageurl;
+          let sourcepage: IClientsidePage = undefined;
+          try {
+            sourcepage = await ClientsidePageFromFile(sp.web.getFileByServerRelativeUrl(sourceRelativePageUrl));
+          } catch (error) {
+            console.dir(error);
+            console.log('source page not found ' + this._pageName);
+            Dialog.alert('Original page [' + this._pageName + '] not exists.Contact Admin');
+            return;
+          }
+          console.log('async/await source -> ', sourcepage);
 
-        if (sourcepage != undefined) {
+          if (sourcepage != undefined) {
 
-          const languagecode: string = this._sPTranslationLanguage;
+            const languagecode: string = this._sPTranslationLanguage;
 
-          // const targetRelativePageUrl: string = '/SitePages/' + languagecode + '/' + this._pageName;
-          const targetRelativePageUrl: string = this._targetPageurl;
-          const targetpage = await ClientsidePageFromFile(sp.web.getFileByServerRelativeUrl(targetRelativePageUrl));
-          await sourcepage.copyTo(targetpage, true);
+            // const targetRelativePageUrl: string = '/SitePages/' + languagecode + '/' + this._pageName;
+            const targetRelativePageUrl: string = this._targetPageurl;
+            const targetpage = await ClientsidePageFromFile(sp.web.getFileByServerRelativeUrl(targetRelativePageUrl));
+            await sourcepage.copyTo(targetpage, true);
 
-          console.log('Copy Completed.......');
+            console.log('Copy Completed.......');
 
-          const translationService: ITranslationService = environment.config.regionSpecifier
-            ? new TranslationService(this.context.httpClient, environment.config.translatorApiKey, `-${environment.config.regionSpecifier}`)
-            : new TranslationService(this.context.httpClient, environment.config.translatorApiKey);
 
-          Dialog.alert(`Starting Translation............ ` + languagecode);
 
-          await new Promise(resolve => setTimeout(resolve, 5000));
+            Dialog.alert(`Starting Translation............ ` + languagecode);
 
-          sp.web.loadClientsidePage(targetRelativePageUrl).then(async (clientSidePage: IClientsidePage) => {
+            await new Promise(resolve => setTimeout(resolve, 5000));
 
-            try {
-              console.log('translation started');
+            sp.web.loadClientsidePage(targetRelativePageUrl).then(async (clientSidePage: IClientsidePage) => {
 
-              var clientControls: ColumnControl<any>[] = [];
-              clientSidePage.findControl((c) => {
-                if (c instanceof ClientsideText) {
-                  clientControls.push(c);
-                }
-                else if (c instanceof ClientsideWebpart) {
-                  clientControls.push(c);
-                }
-                return false;
-              });
+              try {
+                console.log('translation started');
 
-              await this._alltranslateClientSideControl(translationService, clientControls, languagecode);
+                var clientControls: ColumnControl<any>[] = [];
+                clientSidePage.findControl((c) => {
+                  if (c instanceof ClientsideText) {
+                    clientControls.push(c);
+                  }
+                  else if (c instanceof ClientsideWebpart) {
+                    clientControls.push(c);
+                  }
+                  return false;
+                });
 
-              //const nav = sp.web.navigation.topNavigationBar;
-              //Dialog.alert(nav.length.toString());
-              //const childrenData = await nav.getById(1).children();
-              //await nav.getById(1).update({
-              //    Title: "A new title",
-              //});
+                await this._alltranslateClientSideControl(clientControls, languagecode);
 
-              //clientSidePage.title = this._getTranslatedText(clientSidePage.title, languagecode, false);
+                //const nav = sp.web.navigation.topNavigationBar;
+                //Dialog.alert(nav.length.toString());
+                //const childrenData = await nav.getById(1).children();
+                //await nav.getById(1).update({
+                //    Title: "A new title",
+                //});
 
-              clientSidePage.save();
+                //clientSidePage.title = this._getTranslatedText(clientSidePage.title, languagecode, false);
 
-              console.log('translation complete');
+                clientSidePage.save();
 
-              Dialog.alert(`Translation Completed........`);
+                console.log('translation complete');
 
-            } catch (error) {
+                Dialog.alert(`Translation Completed........`);
+
+              } catch (error) {
+                console.dir(error);
+
+
+              }
+            }).catch((error: Error) => {
               console.dir(error);
 
+            });
 
-            }
-          }).catch((error: Error) => {
-            console.dir(error);
-
-          });
-
+          }
         }
 
       } catch (err) {
@@ -248,7 +242,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
   }
 
-  private _alltranslateClientSideControl = async (translationService: ITranslationService, clientsideControls: ColumnControl<any>[], languagecode: string): Promise<void> => {
+  private _alltranslateClientSideControl = async ( clientsideControls: ColumnControl<any>[], languagecode: string): Promise<void> => {
     try {
       for (const c of clientsideControls) {
         if (c instanceof ClientsideWebpart) {
@@ -259,7 +253,8 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                 for (const key of propkeys) {
                   const propvalue = c.data.webPartData.serverProcessedContent.searchablePlainTexts[key];
                   if (propvalue) {
-                    let translationResult = await translationService.translate(propvalue, languagecode, false);
+                    //let translationResult = await translationService.translate(propvalue, languagecode, false);
+                    let translationResult = await this.props.translationService.translate(propvalue, languagecode, false);
                     const translatedText = translationResult.translations[0].text;
                     c.data.webPartData.serverProcessedContent.searchablePlainTexts[key] = translatedText;
                   }
@@ -271,7 +266,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
         else if (c instanceof ClientsideText) {
           const propvalue = c.text;
           if (propvalue) {
-            let translationResult = await translationService.translate(propvalue, languagecode, true);
+            let translationResult = await this.props.translationService.translate(propvalue, languagecode, true);
             const translatedText = translationResult.translations[0].text;
             c.text = translatedText;
           }
@@ -332,29 +327,31 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     console.log('getTranslationPageMetaData ' + this._listId + '--' + this._listItemId);
     try {
       const siteurl = `https://8p5g5n.sharepoint.com/_api/web/Lists/GetById('${this._listId}')/RenderListDataAsStream`;
-      const result = await this.context.spHttpClient.post(siteurl, SPHttpClient.configurations.v1, {
-        body: JSON.stringify({
-          parameters: {
-            ViewXml: `<View Scope="RecursiveAll">
-                  <ViewFields>
-                    <FieldRef Name="_SPIsTranslation" />
-                    <FieldRef Name="_SPTranslatedLanguages" />
-                    <FieldRef Name="_SPTranslationLanguage" />
-                    <FieldRef Name="_SPTranslationSourceItemId" />
-                  </ViewFields>
-                  <Query>
-                    <Where>
-                    <Eq>
-                        <FieldRef Name="ID" />
-                        <Value Type="Number">${this._listItemId}</Value>
-                    </Eq>
-                </Where>
-                  </Query>
-                  <RowLimit />
-                </View>`
-          }
-        })
-      });
+      //const result = await this.context.spHttpClient.post(siteurl, SPHttpClient.configurations.v1, {
+      //  body: JSON.stringify({
+      //    parameters: {
+      //      ViewXml: `<View Scope="RecursiveAll">
+      //            <ViewFields>
+      //              <FieldRef Name="_SPIsTranslation" />
+      //              <FieldRef Name="_SPTranslatedLanguages" />
+      //              <FieldRef Name="_SPTranslationLanguage" />
+      //              <FieldRef Name="_SPTranslationSourceItemId" />
+      //            </ViewFields>
+      //            <Query>
+      //              <Where>
+      //              <Eq>
+      //                  <FieldRef Name="ID" />
+      //                  <Value Type="Number">${this._listItemId}</Value>
+      //              </Eq>
+      //          </Where>
+      //            </Query>
+      //            <RowLimit />
+      //          </View>`
+      //    }
+      //  })
+      //});
+
+      const result = await this.props.translationService.getSitePageLibraryInfo(siteurl,  this._listItemId);
 
       if (!result.ok) {
         console.log('failed getTranslationPageMetaData');
@@ -397,7 +394,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     console.log("");
     console.log('getSourcePageMetaData :' + this._listId + '-- page id ' + pageid);
 
-    console.log(this.context.pageContext.web.absoluteUrl);
+   // console.log(this.context.pageContext.web.absoluteUrl);
 
     // const uniqid = "{9956AB6B-9C81-4448-88D3-634BC9536D34}";
     //var currentPageUrl = this.context.pageContext.site.serverRequestPath;
@@ -416,30 +413,30 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
     try {
       const siteurl = `https://8p5g5n.sharepoint.com/_api/web/Lists/GetById('${this._listId}')/RenderListDataAsStream`;
-      const result = await this.context.spHttpClient.post(siteurl, SPHttpClient.configurations.v1, {
-        body: JSON.stringify({
-          parameters: {
-            ViewXml: `<View Scope="RecursiveAll">
-                  <ViewFields>
-                    <FieldRef Name="_SPIsTranslation" />
-                    <FieldRef Name="_SPTranslatedLanguages" />
-                    <FieldRef Name="_SPTranslationLanguage" />
-                    <FieldRef Name="_SPTranslationSourceItemId" />
-                  </ViewFields>
-                  <Query>
-                    <Where>
-                    <Eq>
-                        <FieldRef Name="UniqueId" />
-                        <Value Type="Guid">${pageid}</Value>
-                    </Eq>
-                </Where>
-                  </Query>
-                  <RowLimit />
-                </View>`
-          }
-        })
-      });
-
+      //const result = await this.context.spHttpClient.post(siteurl, SPHttpClient.configurations.v1, {
+      //  body: JSON.stringify({
+      //    parameters: {
+      //      ViewXml: `<View Scope="RecursiveAll">
+      //            <ViewFields>
+      //              <FieldRef Name="_SPIsTranslation" />
+      //              <FieldRef Name="_SPTranslatedLanguages" />
+      //              <FieldRef Name="_SPTranslationLanguage" />
+      //              <FieldRef Name="_SPTranslationSourceItemId" />
+      //            </ViewFields>
+      //            <Query>
+      //              <Where>
+      //              <Eq>
+      //                  <FieldRef Name="UniqueId" />
+      //                  <Value Type="Guid">${pageid}</Value>
+      //              </Eq>
+      //          </Where>
+      //            </Query>
+      //            <RowLimit />
+      //          </View>`
+      //    }
+      //  })
+      //});
+      const result = await this.props.translationService.getSitePageLibraryInfoByUniqueId(siteurl, pageid);
       if (!result.ok) {
         console.log('failed getSourcePageMetaData');
         const resultData: any = await result.json();

@@ -6,6 +6,8 @@ import { ITranslatorLanguage } from "../models/ITranslatorLanguage";
 import { IDetectedLanguage } from "../models/IDetectedLanguage";
 import { ITranslationResult } from "../models/ITranslationResult";
 import { IBreakSentenceResult } from "../models/IBreakSentenceResult";
+import { SPHttpClient } from '@microsoft/sp-http';
+import { Guid } from "@microsoft/sp-core-library";
 
 export class TranslationService implements ITranslationService {
 
@@ -13,14 +15,16 @@ export class TranslationService implements ITranslationService {
   private apiKey: string;
   private headers: Headers;
   private host: string;
+  private sphttpclient: SPHttpClient;
 
-  constructor(httpClient: HttpClient, apiKey: string, regionSpecifier: string = "") {
+  constructor(httpClient: HttpClient, sphttpclient: SPHttpClient, apiKey: string, regionSpecifier: string = "") {
     this.httpClient = httpClient;
     this.apiKey = apiKey;
     this.host = `api${regionSpecifier}.cognitive.microsofttranslator.com`;
     this.headers = new Headers();
     this.headers.append("Content-type", "application/json");
     this.headers.append("Ocp-Apim-Subscription-Key", this.apiKey);
+    this.sphttpclient = sphttpclient;
   }
 
   public async getAvailableLanguages(supportedLanguages: string[]): Promise<ILanguage[]> {
@@ -77,6 +81,67 @@ export class TranslationService implements ITranslationService {
     }
 
     return null;
+  }
+
+
+  public async getSitePageLibraryInfo(siteurl: string, listItemId :string): Promise<any> {
+
+    const result = await this.sphttpclient.post(siteurl, SPHttpClient.configurations.v1, {
+      body: JSON.stringify({
+        parameters: {
+          ViewXml: `<View Scope="RecursiveAll">
+                  <ViewFields>
+                    <FieldRef Name="_SPIsTranslation" />
+                    <FieldRef Name="_SPTranslatedLanguages" />
+                    <FieldRef Name="_SPTranslationLanguage" />
+                    <FieldRef Name="_SPTranslationSourceItemId" />
+                  </ViewFields>
+                  <Query>
+                    <Where>
+                    <Eq>
+                        <FieldRef Name="ID" />
+                        <Value Type="Number">${listItemId}</Value>
+                    </Eq>
+                </Where>
+                  </Query>
+                  <RowLimit />
+                </View>`
+        }
+      })
+    });
+
+    return result;
+
+  }
+
+  public async getSitePageLibraryInfoByUniqueId(siteurl: string, pageid: Guid): Promise<any> {
+
+    const result = await this.sphttpclient.post(siteurl, SPHttpClient.configurations.v1, {
+      body: JSON.stringify({
+        parameters: {
+          ViewXml: `<View Scope="RecursiveAll">
+                  <ViewFields>
+                    <FieldRef Name="_SPIsTranslation" />
+                    <FieldRef Name="_SPTranslatedLanguages" />
+                    <FieldRef Name="_SPTranslationLanguage" />
+                    <FieldRef Name="_SPTranslationSourceItemId" />
+                  </ViewFields>
+                  <Query>
+                    <Where>
+                    <Eq>
+                        <FieldRef Name="UniqueId" />
+                        <Value Type="Guid">${pageid}</Value>
+                    </Eq>
+                </Where>
+                  </Query>
+                  <RowLimit />
+                </View>`
+        }
+      })
+    });
+
+    return result;
+
   }
 
   public async translate(sourceText: string, languageCode: string, asHtml: boolean): Promise<ITranslationResult> {

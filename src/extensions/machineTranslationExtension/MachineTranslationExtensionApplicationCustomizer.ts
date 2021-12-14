@@ -61,8 +61,8 @@ export default class MachineTranslationExtensionApplicationCustomizer
 
       // Init the translation service
       const translationService: ITranslationService = this.properties.regionSpecifier
-        ? new TranslationService(this.context.httpClient, this.properties.translatorApiKey, `-${this.properties.regionSpecifier}`)
-        : new TranslationService(this.context.httpClient, this.properties.translatorApiKey);
+        ? new TranslationService(this.context.httpClient, this.context.spHttpClient, this.properties.translatorApiKey, `-${this.properties.regionSpecifier}`)
+        : new TranslationService(this.context.httpClient, this.context.spHttpClient, this.properties.translatorApiKey);
 
       const props: ITranslationBarProps = {
         supportedLanguages: this.properties.supportedLanguages,
@@ -80,8 +80,8 @@ export default class MachineTranslationExtensionApplicationCustomizer
     if (this._topPlaceholder && this._topPlaceholder.domElement) {
       // Init the translation service
       const translationService: ITranslationService = this.properties.regionSpecifier
-        ? new TranslationService(this.context.httpClient, this.properties.translatorApiKey, `-${this.properties.regionSpecifier}`)
-        : new TranslationService(this.context.httpClient, this.properties.translatorApiKey);
+        ? new TranslationService(this.context.httpClient, this.context.spHttpClient, this.properties.translatorApiKey, `-${this.properties.regionSpecifier}`)
+        : new TranslationService(this.context.httpClient, this.context.spHttpClient, this.properties.translatorApiKey);
 
       const props: ITranslationBarProps = {
         supportedLanguages: this.properties.supportedLanguages,
