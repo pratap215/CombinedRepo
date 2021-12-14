@@ -126,6 +126,9 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     console.log(page);
 
     console.log(page["ID"]);
+
+    this._listId = this.props.currentListId;
+    this._listItemId = this.props.currentPageId.toString();
     return page;
   }
   
@@ -138,8 +141,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     (async () => {
       try {
 
-        this._listId = this.props.currentListId;
-        this._listItemId = this.props.currentPageId.toString();
+        
 
         const isValidTargetFile = await this.getTranslationPageMetaData();
 
@@ -327,9 +329,9 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
   //Metadata start
 
   public async getTranslationPageMetaData(): Promise<boolean> {
-    console.log('getTranslationPageMetaData');
+    console.log('getTranslationPageMetaData ' + this._listId + '--' + this._listItemId);
     try {
-      const siteurl = `https://8p5g5n.sharepoint.com/_api/web/Lists/GetById('${this.props.currentListId}')/RenderListDataAsStream`;
+      const siteurl = `https://8p5g5n.sharepoint.com/_api/web/Lists/GetById('${this._listId}')/RenderListDataAsStream`;
       const result = await this.context.spHttpClient.post(siteurl, SPHttpClient.configurations.v1, {
         body: JSON.stringify({
           parameters: {
@@ -344,7 +346,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                     <Where>
                     <Eq>
                         <FieldRef Name="ID" />
-                        <Value Type="Number">${this.props.currentPageId}</Value>
+                        <Value Type="Number">${this._listItemId}</Value>
                     </Eq>
                 </Where>
                   </Query>
@@ -393,7 +395,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
   public async getSourcePageMetaData(pageid: Guid): Promise<boolean> {
     console.log("");
-    console.log('getSourcePageMetaData :' + pageid);
+    console.log('getSourcePageMetaData :' + this._listId + '-- page id ' + pageid);
 
     console.log(this.context.pageContext.web.absoluteUrl);
 
@@ -413,7 +415,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     //    console.log(r);
 
     try {
-      const siteurl = `https://8p5g5n.sharepoint.com/_api/web/Lists/GetById('${this.props.currentListId}')/RenderListDataAsStream`;
+      const siteurl = `https://8p5g5n.sharepoint.com/_api/web/Lists/GetById('${this._listId}')/RenderListDataAsStream`;
       const result = await this.context.spHttpClient.post(siteurl, SPHttpClient.configurations.v1, {
         body: JSON.stringify({
           parameters: {
