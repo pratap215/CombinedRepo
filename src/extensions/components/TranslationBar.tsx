@@ -12,12 +12,13 @@ import { Layer } from "office-ui-fabric-react/lib/Layer";
 import { MessageBar, MessageBarType } from "office-ui-fabric-react/lib/MessageBar";
 import { Overlay } from "office-ui-fabric-react/lib/Overlay";
 import { IDetectedLanguage } from "../../models/IDetectedLanguage";
-
+import * as _ from "lodash";
 import { sp } from "@pnp/sp";
 import "@pnp/sp/webs";
 import "@pnp/sp/navigation";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
+import "@pnp/sp/features";
 import { ColumnControl, ClientsideText, ClientsideWebpart, IClientsidePage, ClientsidePageFromFile } from "@pnp/sp/clientside-pages";
 import { ITranslationResult } from "../../models/ITranslationResult";
 import { Navigation } from "@pnp/sp/navigation";
@@ -78,44 +79,24 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
     const { availableLanguages, globalError, selectedLanguage, isLoading } = this.state;
 
-    if (isLoading) {
-      return (
-        <div className={styles.translationBar}>
-          <div className={styles.loadingButton}>Loading ...</div>
-        </div>
-      );
-    }
+    //if (isLoading) {
+    //  return (
+    //    <div className={styles.translationBar}>
+    //      <div className={styles.loadingButton}>Loading ...</div>
+    //    </div>
+    //  );
+    //}
 
-    if (globalError) {
-      return (
-        <div className={styles.translationBar}>
-          <MessageBar messageBarType={MessageBarType.error}>
-            {globalError}
-          </MessageBar>
-        </div>
-      );
-    }
-
-    if (!selectedLanguage) {
-      return (
-        <div className={styles.translationBar}>
-          <MessageBar messageBarType={MessageBarType.info}>
-            {"Could not determine the language of the page. It is either not supported by the API or it is not enabled by your adminitrator."}
-          </MessageBar>
-        </div>
-      );
-    }
-
-    let currentMenuItems = [...availableLanguages];
-    if (currentMenuItems.length <= 0) {
-      currentMenuItems = [
-        {
-          key: "noTranslationsPlaceholder",
-          name: "No available languages found",
-          disabled: true
-        }
-      ];
-    }
+    //if (globalError) {
+    //  return (
+    //    <div className={styles.translationBar}>
+    //      <MessageBar messageBarType={MessageBarType.error}>
+    //        {globalError}
+    //      </MessageBar>
+    //    </div>
+    //  );
+    //}
+         
 
     return (
       <div className={styles.translationBar}>
@@ -156,6 +137,9 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
     (async () => {
       try {
+
+        this._listId = this.props.currentListId;
+        this._listItemId = this.props.currentPageId.toString();
 
         const isValidTargetFile = await this.getTranslationPageMetaData();
 
@@ -266,14 +250,18 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     try {
       for (const c of clientsideControls) {
         if (c instanceof ClientsideWebpart) {
-          if (c.data.webPartData?.serverProcessedContent?.searchablePlainTexts) {
-            let propkeys = Object.keys(c.data.webPartData?.serverProcessedContent?.searchablePlainTexts);
-            for (const key of propkeys) {
-              const propvalue = c.data.webPartData?.serverProcessedContent?.searchablePlainTexts[key];
-              if (propvalue) {
-                let translationResult = await translationService.translate(propvalue, languagecode, false);
-                const translatedText = translationResult.translations[0].text;
-                c.data.webPartData.serverProcessedContent.searchablePlainTexts[key] = translatedText;
+          if (c.data.webPartData) {
+            if (c.data.webPartData.serverProcessedContent) {
+              if (c.data.webPartData.serverProcessedContent.searchablePlainTexts) {
+                let propkeys = Object.keys(c.data.webPartData.serverProcessedContent.searchablePlainTexts);
+                for (const key of propkeys) {
+                  const propvalue = c.data.webPartData.serverProcessedContent.searchablePlainTexts[key];
+                  if (propvalue) {
+                    let translationResult = await translationService.translate(propvalue, languagecode, false);
+                    const translatedText = translationResult.translations[0].text;
+                    c.data.webPartData.serverProcessedContent.searchablePlainTexts[key] = translatedText;
+                  }
+                }
               }
             }
           }
