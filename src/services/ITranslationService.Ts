@@ -8,5 +8,4 @@ export interface ITranslationService {
   detectLanguage(text: string): Promise<IDetectedLanguage>;
   translate(sourceText: string, languageCode: string, asHtml: boolean): Promise<ITranslationResult>;
   breakSentence(sourceText: string): Promise<IBreakSentenceResult>;
-  translatetotext(elementtextcontent: string,sourceText: string, languageCode: string, asHtml: boolean): Promise<string>;
 }

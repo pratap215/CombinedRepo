@@ -1,8 +1,8 @@
 ﻿#Parameters
 #$AppCatalogSiteURL = "https://crescent.sharepoint.com/sites/Apps"
 #AppCatalogSiteURL
-#$AppCatalogSiteURL = "https://8p5g5n.sharepoint.com/sites/appcatalog"
-$AppCatalogSiteURL = "https://dwpstage.sharepoint.com/sites/appcatalog"
+$AppCatalogSiteURL = "https://8p5g5n.sharepoint.com/sites/appcatalog"
+#$AppCatalogSiteURL = "https://dwpstage.sharepoint.com/sites/appcatalog"
 #$AppFilePath = "C:\Users\adminpen.arpula\spfxclientsideprojects\react-application-machine-translations\sharepoint\solution\machine-translation-extension.sppkg"
 $AppName = "machine-translation-extension-client-side-solution"
   
