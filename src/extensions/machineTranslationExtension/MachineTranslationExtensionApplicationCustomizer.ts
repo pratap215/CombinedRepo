@@ -69,6 +69,7 @@ export default class MachineTranslationExtensionApplicationCustomizer
         currentPageId: this.context.pageContext.listItem.id,
         currentListId: this.context.pageContext.list.id.toString(),
         currentWebUrl: this.context.pageContext.web.serverRelativeUrl,
+        absoluteUrl: this.context.pageContext.web.absoluteUrl,
         translationService
       };
       const elem: React.ReactElement<ITranslationBarProps> = React.createElement(TranslationBar, props);
@@ -83,11 +84,14 @@ export default class MachineTranslationExtensionApplicationCustomizer
         ? new TranslationService(this.context.httpClient, this.context.spHttpClient, this.properties.translatorApiKey, `-${this.properties.regionSpecifier}`)
         : new TranslationService(this.context.httpClient, this.context.spHttpClient, this.properties.translatorApiKey);
 
+     
+
       const props: ITranslationBarProps = {
         supportedLanguages: this.properties.supportedLanguages,
         currentPageId: this.context.pageContext.listItem.id,
         currentListId: this.context.pageContext.list.id.toString(),
         currentWebUrl: this.context.pageContext.web.serverRelativeUrl,
+        absoluteUrl: this.context.pageContext.web.absoluteUrl,
         translationService
       };
       const element: React.ReactElement<ITranslationBarProps> = React.createElement(TranslationBar, props);

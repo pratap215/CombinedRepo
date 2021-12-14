@@ -5,5 +5,6 @@ export interface ITranslationBarProps {
   currentPageId: number;
   currentListId: string;
   currentWebUrl: string;
+  absoluteUrl: string;
   translationService: ITranslationService;
 }

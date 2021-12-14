@@ -36,6 +36,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
   private _sPTranslationSourceItemId: Guid | undefined;
   private _sPTranslationLanguage: string | undefined;
   private _sPTranslatedLanguages: Array<string> | undefined;
+  private buttonCaption: string = "---";
 
   constructor(props: ITranslationBarProps) {
     super(props);
@@ -62,7 +63,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
         availableLanguages: [],
         selectedLanguage: undefined,
         pageItem: undefined,
-        isLoading: true,
+        isLoading: false,
         isTranslated: false,
         isTranslating: false,
         globalError: undefined
@@ -71,16 +72,16 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
   }
 
   public render(): JSX.Element {
+    console.log('render');
+    const { availableLanguages, globalError, selectedLanguage, isLoading, isTranslated } = this.state;
 
-    const { availableLanguages, globalError, selectedLanguage, isLoading } = this.state;
-
-    //if (isLoading) {
-    //  return (
-    //    <div className={styles.translationBar}>
-    //      <div className={styles.loadingButton}>Loading ...</div>
-    //    </div>
-    //  );
-    //}
+    if (isLoading) {
+      return (
+        <div className={styles.translationBar}>
+          <div className={styles.loadingButton}>Translating ...</div>
+        </div>
+      );
+    }
 
     //if (globalError) {
     //  return (
@@ -91,31 +92,56 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     //    </div>
     //  );
     //}
-         
 
-    return (
-      <div className={styles.translationBar}>
-        <ActionButton
-          className={styles.actionButton}
-          text={"Translate " }
-          onClick={() => this._onTranslateCurrentPage()}
-        />
-      </div>
-    );
+    console.log(!isTranslated);
+   
+      return (
+        <div className={styles.translationBar}>
+          <ActionButton
+            className={styles.actionButton}
+            text={globalError}
+            disabled={!isTranslated}
+            onClick={() => this._onTranslateCurrentPage()}
+          
+          />
+        </div>
+      );
+    //}
+    //else {
+    //  console.log('cannot render');
+    //}
   }
 
   private _initTranslationBar = async (): Promise<void> => {
+    console.log("_initTranslationBar");
     const pageItem = await this._getPageItem();
     this._pageName = pageItem["FileLeafRef"];
+
+    const isvalid = await this.getTranslationPageMetaData();
+    let buttonCaption: string = "";
+    if (isvalid) {
+      buttonCaption = "Translate";
+    }
+
+    this.setState({
+      isLoading: false,
+      isTranslated: isvalid,
+      isTranslating: false,
+      globalError: buttonCaption
+    });
+
   }
 
   private _getPageItem = async (): Promise<any> => {
+
     console.log("_getPageItem");
+
     const page = await sp.web.lists
       .getById(this.props.currentListId)
       .items
       .getById(this.props.currentPageId)
       .select("Title", "FileLeafRef", "FileRef", "Description", "ID").get();
+
     console.log(this.props.currentListId);
     console.log(this.props.currentPageId);
     console.log(page);
@@ -125,6 +151,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     this._listId = this.props.currentListId;
     this._listItemId = this.props.currentPageId.toString();
     return page;
+
   }
   
   //NEW Code Start
@@ -154,6 +181,11 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
             return;
           }
 
+          this.setState({
+            isLoading: true
+            
+          });
+
           console.log('Copying......... ');
           // const sourceRelativePageUrl: string = '/SitePages/' + this._pageName;
           const sourceRelativePageUrl: string = this._sourcePageurl;
@@ -178,8 +210,6 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
             await sourcepage.copyTo(targetpage, true);
 
             console.log('Copy Completed.......');
-
-
 
             Dialog.alert(`Starting Translation............ ` + languagecode);
 
@@ -218,6 +248,8 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
                 Dialog.alert(`Translation Completed........`);
 
+                
+
               } catch (error) {
                 console.dir(error);
 
@@ -236,10 +268,14 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
         console.log(err);
 
       }
+      
 
     })();
 
+    this.setState({
+      isLoading: false
 
+    });
   }
 
   private _alltranslateClientSideControl = async ( clientsideControls: ColumnControl<any>[], languagecode: string): Promise<void> => {
@@ -325,32 +361,11 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
   public async getTranslationPageMetaData(): Promise<boolean> {
     console.log('getTranslationPageMetaData ' + this._listId + '--' + this._listItemId);
+    console.log(this.props.absoluteUrl);
     try {
-      const siteurl = `https://8p5g5n.sharepoint.com/_api/web/Lists/GetById('${this._listId}')/RenderListDataAsStream`;
-      //const result = await this.context.spHttpClient.post(siteurl, SPHttpClient.configurations.v1, {
-      //  body: JSON.stringify({
-      //    parameters: {
-      //      ViewXml: `<View Scope="RecursiveAll">
-      //            <ViewFields>
-      //              <FieldRef Name="_SPIsTranslation" />
-      //              <FieldRef Name="_SPTranslatedLanguages" />
-      //              <FieldRef Name="_SPTranslationLanguage" />
-      //              <FieldRef Name="_SPTranslationSourceItemId" />
-      //            </ViewFields>
-      //            <Query>
-      //              <Where>
-      //              <Eq>
-      //                  <FieldRef Name="ID" />
-      //                  <Value Type="Number">${this._listItemId}</Value>
-      //              </Eq>
-      //          </Where>
-      //            </Query>
-      //            <RowLimit />
-      //          </View>`
-      //    }
-      //  })
-      //});
-
+      //const siteurl = `https://8p5g5n.sharepoint.com/_api/web/Lists/GetById('${this._listId}')/RenderListDataAsStream`;
+      const absoluteurl = this.props.absoluteUrl;
+      const siteurl = `${absoluteurl}/_api/web/Lists/GetById('${this._listId}')/RenderListDataAsStream`;
       const result = await this.props.translationService.getSitePageLibraryInfo(siteurl,  this._listItemId);
 
       if (!result.ok) {
@@ -412,30 +427,9 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     //    console.log(r);
 
     try {
-      const siteurl = `https://8p5g5n.sharepoint.com/_api/web/Lists/GetById('${this._listId}')/RenderListDataAsStream`;
-      //const result = await this.context.spHttpClient.post(siteurl, SPHttpClient.configurations.v1, {
-      //  body: JSON.stringify({
-      //    parameters: {
-      //      ViewXml: `<View Scope="RecursiveAll">
-      //            <ViewFields>
-      //              <FieldRef Name="_SPIsTranslation" />
-      //              <FieldRef Name="_SPTranslatedLanguages" />
-      //              <FieldRef Name="_SPTranslationLanguage" />
-      //              <FieldRef Name="_SPTranslationSourceItemId" />
-      //            </ViewFields>
-      //            <Query>
-      //              <Where>
-      //              <Eq>
-      //                  <FieldRef Name="UniqueId" />
-      //                  <Value Type="Guid">${pageid}</Value>
-      //              </Eq>
-      //          </Where>
-      //            </Query>
-      //            <RowLimit />
-      //          </View>`
-      //    }
-      //  })
-      //});
+     // const siteurl = `https://8p5g5n.sharepoint.com/_api/web/Lists/GetById('${this._listId}')/RenderListDataAsStream`;
+      const absoluteurl = this.props.absoluteUrl;
+      const siteurl = `${absoluteurl}/_api/web/Lists/GetById('${this._listId}')/RenderListDataAsStream`;
       const result = await this.props.translationService.getSitePageLibraryInfoByUniqueId(siteurl, pageid);
       if (!result.ok) {
         console.log('failed getSourcePageMetaData');
