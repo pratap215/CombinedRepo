@@ -78,7 +78,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     if (isLoading) {
       return (
         <div className={styles.translationBar}>
-          <div className={styles.loadingButton}>Translating ...</div>
+          <div className={styles.loadingButton}>Translation Bar ...</div>
         </div>
       );
     }
