@@ -72,8 +72,26 @@ export default class MachineTranslationExtensionApplicationCustomizer
         absoluteUrl: this.context.pageContext.web.absoluteUrl,
         translationService
       };
-      const elem: React.ReactElement<ITranslationBarProps> = React.createElement(TranslationBar, props);
+
+      console.log("_renderPlaceHolders new");
+      this.getTranslationPageMetaData(props, translationService).then(res =>
+        this.renderComponent(res,props)
+      );
+
+      //const elem: React.ReactElement<ITranslationBarProps> = React.createElement(TranslationBar, props);
+      //ReactDOM.render(elem, this._topPlaceholder.domElement);
+     }
+  }
+
+  private renderComponent(res: boolean, props: ITranslationBarProps) {
+    const elem: React.ReactElement<ITranslationBarProps> = React.createElement(TranslationBar, props);
+    if (res) {
+      console.log("renderComponent " + res);
       ReactDOM.render(elem, this._topPlaceholder.domElement);
+    }
+    else {
+      console.log("Un mount");
+      ReactDOM.unmountComponentAtNode(this._topPlaceholder.domElement);
     }
   }
 
@@ -84,7 +102,7 @@ export default class MachineTranslationExtensionApplicationCustomizer
         ? new TranslationService(this.context.httpClient, this.context.spHttpClient, this.properties.translatorApiKey, `-${this.properties.regionSpecifier}`)
         : new TranslationService(this.context.httpClient, this.context.spHttpClient, this.properties.translatorApiKey);
 
-     
+
 
       const props: ITranslationBarProps = {
         supportedLanguages: this.properties.supportedLanguages,
@@ -94,8 +112,12 @@ export default class MachineTranslationExtensionApplicationCustomizer
         absoluteUrl: this.context.pageContext.web.absoluteUrl,
         translationService
       };
-      const element: React.ReactElement<ITranslationBarProps> = React.createElement(TranslationBar, props);
-      ReactDOM.render(element, this._topPlaceholder.domElement);
+      console.log("startReactRender new");
+      this.getTranslationPageMetaData(props, translationService).then(res =>
+        this.renderComponent(res, props)
+      );
+      //const element: React.ReactElement<ITranslationBarProps> = React.createElement(TranslationBar, props);
+      //ReactDOM.render(element, this._topPlaceholder.domElement);
     } else {
       console.log('DOM element of the header is undefined. Start to re-render.');
       this._renderPlaceHolders();
@@ -105,4 +127,46 @@ export default class MachineTranslationExtensionApplicationCustomizer
   private _onDispose(): void {
     console.log('[ReactHeaderFooterApplicationCustomizer._onDispose] Disposed custom top and bottom placeholders.');
   }
+
+
+  public async getTranslationPageMetaData(props: ITranslationBarProps, translationService: ITranslationService): Promise<boolean> {
+    console.log('_renderPlaceHolders getTranslationPageMetaData ' + props.currentListId + '--' + props.currentPageId);
+    try {
+      const absoluteurl = props.absoluteUrl;
+      const siteurl = `${absoluteurl}/_api/web/Lists/GetById('${props.currentListId}')/RenderListDataAsStream`;
+      const result = await translationService.getSitePageLibraryInfo(siteurl, props.currentPageId.toString());
+
+      if (!result.ok) {
+        console.log('failed getTranslationPageMetaData');
+        const resultData: any = await result.json();
+        console.log(resultData.error);
+        return false;
+      }
+      else {
+        console.log("success getTranslationPageMetaData _renderPlaceHolders");
+        const data: any = await result.json();
+        // console.log(data);
+        if (data && data.Row && data.Row.length > 0) {
+          const row = data.Row[0];
+          console.log("target page info");
+          console.log(row);
+          if (row["_SPIsTranslation"] == "Yes") {
+            return true;
+          }
+        }
+      }
+
+    } catch (e) {
+      console.log('error getTranslationPageMetaData _renderPlaceHolders');
+      console.log(e);
+      return false;
+    }
+
+    return false;
+  }
+
+
+
+
+
 }

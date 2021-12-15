@@ -120,7 +120,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     const isvalid = await this.getTranslationPageMetaData();
     let buttonCaption: string = "";
     if (isvalid) {
-      buttonCaption = "Translate";
+      buttonCaption = "Click Here to Translate this page to language [" + this._sPTranslationLanguage  + "] code";
     }
 
     this.setState({
