@@ -99,7 +99,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
         <div className={styles.translationBar}>
           <ActionButton
             className={styles.actionButton}
-            text={globalError}
+            text={"Click here to Translate this page"}
             disabled={!isTranslated}
             onClick={() => this._onTranslateCurrentPage()}
           
@@ -120,8 +120,9 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     const isvalid = await this.getTranslationPageMetaData();
     let buttonCaption: string = "";
     if (isvalid) {
-      buttonCaption = "Click here to Translate this page to [" + this.getLanguageName(this._sPTranslationLanguage) + "]";
+      buttonCaption = "Click here to Translate this page" //to [" + this.getLanguageName(this._sPTranslationLanguage) + "]";
     }
+    
 
     this.setState({
       isLoading: false,
