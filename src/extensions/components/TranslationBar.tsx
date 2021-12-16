@@ -260,7 +260,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                   isLoading: false,
                   isTranslated: isValidTargetFile,
                   isTranslating: false,
-                  globalError: "Click here to Translate this page to [" + this.getLanguageName(languagecode) + "]"
+                  globalError: "Click here to Translate this page" // to [" + this.getLanguageName(languagecode) + "]"
                 });
 
                 
