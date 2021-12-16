@@ -70,6 +70,7 @@ export default class MachineTranslationExtensionApplicationCustomizer
         currentListId: this.context.pageContext.list.id.toString(),
         currentWebUrl: this.context.pageContext.web.serverRelativeUrl,
         absoluteUrl: this.context.pageContext.web.absoluteUrl,
+        pageContext: this.context.pageContext,
         translationService
       };
 
@@ -110,7 +111,8 @@ export default class MachineTranslationExtensionApplicationCustomizer
         currentListId: this.context.pageContext.list.id.toString(),
         currentWebUrl: this.context.pageContext.web.serverRelativeUrl,
         absoluteUrl: this.context.pageContext.web.absoluteUrl,
-        translationService
+        translationService,
+        pageContext: this.context.pageContext
       };
       console.log("startReactRender new");
       this.getTranslationPageMetaData(props, translationService).then(res =>
