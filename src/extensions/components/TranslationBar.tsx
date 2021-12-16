@@ -75,13 +75,13 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     console.log('render');
     const { availableLanguages, globalError, selectedLanguage, isLoading, isTranslated } = this.state;
 
-    if (isLoading) {
-      return (
-        <div className={styles.translationBar}>
-          <div className={styles.loadingButton}>Translation Bar ...</div>
-        </div>
-      );
-    }
+    //if (isLoading) {
+    //  return (
+    //    <div className={styles.translationBar}>
+    //      <div className={styles.loadingButton}>Translation Bar ...</div>
+    //    </div>
+    //  );
+    //}
 
     //if (globalError) {
     //  return (
@@ -120,7 +120,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     const isvalid = await this.getTranslationPageMetaData();
     let buttonCaption: string = "";
     if (isvalid) {
-      buttonCaption = "Click Here to Translate this page to language [" + this._sPTranslationLanguage  + "] code";
+      buttonCaption = "Click here to Translate this page to [" + this.getLanguageName(this._sPTranslationLanguage) + "]";
     }
 
     this.setState({
@@ -163,6 +163,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     (async () => {
       try {
 
+      
         if (confirm('Are you sure you want to translate this page[' + this._pageName + ']')) {
 
           const isValidTargetFile = await this.getTranslationPageMetaData();
@@ -201,6 +202,13 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
           console.log('async/await source -> ', sourcepage);
 
           if (sourcepage != undefined) {
+
+            this.setState({
+              isLoading: false,
+              isTranslated: false,
+              isTranslating: false,
+              globalError: "Translating........... "
+            });
 
             const languagecode: string = this._sPTranslationLanguage;
 
@@ -247,6 +255,13 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                 console.log('translation complete');
 
                 Dialog.alert(`Translation Completed........`);
+
+                this.setState({
+                  isLoading: false,
+                  isTranslated: isValidTargetFile,
+                  isTranslating: false,
+                  globalError: "Click here to Translate this page to [" + this.getLanguageName(languagecode) + "]"
+                });
 
                 
 
@@ -459,6 +474,68 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     }
 
     return false;
+  }
+
+  private getLanguageName(code: string): string {
+    console.log("getLanguageName " + code);
+    const regionalLanguages = `{"ar-sa":"Arabic",
+"az-latn-az":"Azerbaijani",
+"eu-es":"Basque",
+"bs-latn-ba":"Bosnian (Latin)",
+"bg-bg":"Bulgarian",
+"ca-es":"Catalan",
+"zh-cn":"Chinese (Simplified)",
+"zh-tw":"Chinese (Traditional)",
+"hr-hr":"Croatian",
+"cs-cz":"Czech",
+"da-dk":"Danish",
+"prs-af":"Dari",
+"nl-nl":"Dutch",
+"en-us":"English",
+"et-ee":"Estonian",
+"fi-fi":"Finnish",
+"fr-fr":"French",
+"gl-es":"Galician",
+"de-de":"German",
+"el-gr":"Greek",
+"he-il":"Hebrew",
+"hi-in":"Hindi",
+"hu-hu":"Hungarian",
+"id-id":"Indonesian",
+"ga-ie":"Irish",
+"it-it":"Italian",
+"ja-jp":"Japanese",
+"kk-kz":"Kazakh",
+"ko-kr":"Korean",
+"lv-lv":"Latvian",
+"lt-lt":"Lithuanian",
+"mk-mk":"Macedonian",
+"ms-my":"Malay",
+"nb-no":"Norwegian (Bokmål)",
+"pl-pl":"Polish",
+"pt-br":"Portuguese (Brazil)",
+"pt-pt":"Portuguese (Portugal)",
+"ro-ro":"Romanian",
+"ru-ru":"Russian",
+"sr-cyrl-rs":"Serbian (Cyrillic, Serbia)",
+"sr-latn-cs":"Serbian (Latin)",
+"sr-latn-rs":"Serbian (Latin, Serbia)",
+"sk-sk":"Slovak",
+"sl-si":"Slovenian",
+"es-es":"Spanish",
+"sv-se":"Swedish",
+"th-th":"Thai",
+"tr-tr":"Turkish",
+"uk-ua":"Ukrainian",
+"vi-vn":"Vietnamese",
+"cy-gb":"Welsh"}`;
+
+    const languageNames = JSON.parse(regionalLanguages);
+
+    console.log("getLanguageName name " + languageNames["de-de"]);
+
+    return languageNames[code.toLowerCase()];
+
   }
 
 
