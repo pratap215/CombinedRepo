@@ -10,4 +10,5 @@ export interface ITranslationBarState {
   isTranslating: boolean;
   isTranslated: boolean;
   globalError: string;
+  userPermission: boolean;
 }

@@ -24,6 +24,7 @@ import { ITranslationResult } from "../../models/ITranslationResult";
 import { Navigation } from "@pnp/sp/navigation";
 import { Guid } from "@microsoft/sp-core-library";
 import { Dialog } from '@microsoft/sp-dialog';
+import { SPPermission } from '@microsoft/sp-page-context';
 
 export class TranslationBar extends React.Component<ITranslationBarProps, ITranslationBarState> {
 
@@ -38,6 +39,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
   private _sPTranslatedLanguages: Array<string> | undefined;
   private buttonCaption: string = "---";
 
+
   constructor(props: ITranslationBarProps) {
     super(props);
 
@@ -48,14 +50,17 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
       isLoading: true,
       isTranslated: false,
       isTranslating: false,
-      globalError: undefined
+      globalError: undefined,
+      userPermission: false
     };
   }
 
   public async componentDidMount() {
     this._initTranslationBar();
+    this.setState({
+      userPermission: this.props.pageContext.list.permissions.hasPermission(SPPermission.manageLists)
+    })
   }
-
   public async componentDidUpdate(nextProps: ITranslationBarProps) {
     if (nextProps.currentPageId !== this.props.currentPageId) {
       // Set original state
@@ -72,6 +77,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
   }
 
   public render(): JSX.Element {
+
     console.log('render');
     const { availableLanguages, globalError, selectedLanguage, isLoading, isTranslated } = this.state;
 
@@ -96,15 +102,26 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     console.log(!isTranslated);
    
       return (
-        <div className={styles.translationBar}>
-          <ActionButton
-            className={styles.actionButton}
-            text={"Click here to Translate this page"}
-            disabled={!isTranslated}
-            onClick={() => this._onTranslateCurrentPage()}
-          
-          />
-        </div>
+        <>
+        {
+          this.state.userPermission ? 
+          <>
+            <div className={styles.translationBar}>
+              <ActionButton
+                className={styles.actionButton}
+                text={globalError}
+                disabled={!isTranslated}
+                onClick={() => this._onTranslateCurrentPage()}
+              
+              />
+            </div>
+          </>
+          :
+          <>
+          </>
+        }
+      
+      </>
       );
     //}
     //else {
