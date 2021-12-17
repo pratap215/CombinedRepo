@@ -28,7 +28,7 @@ import { SPPermission } from '@microsoft/sp-page-context';
 // import ProgressDialogContent from './../components/ProgressDialog';
 import { DialogContent, Stack, Spinner, IStackTokens } from "office-ui-fabric-react";
 import { DialogType, DialogFooter } from 'office-ui-fabric-react';
-import { Dialog as D1} from 'office-ui-fabric-react'
+import { Dialog as D1 } from 'office-ui-fabric-react';
 
 const stackTokens: IStackTokens = {
   childrenGap: 20,
@@ -72,7 +72,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     this._initTranslationBar();
     this.setState({
       userPermission: this.props.pageContext.list.permissions.hasPermission(SPPermission.manageLists)
-    })
+    });
   }
   public async componentDidUpdate(nextProps: ITranslationBarProps) {
     if (nextProps.currentPageId !== this.props.currentPageId) {
@@ -182,7 +182,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     const isvalid = await this.getTranslationPageMetaData();
     let buttonCaption: string = "";
     if (isvalid) {
-      buttonCaption = "Click here to Translate this page" //to [" + this.getLanguageName(this._sPTranslationLanguage) + "]";
+      buttonCaption = "Auto-translate from original to [" + this.getLanguageName(this._sPTranslationLanguage) + "]";
     }
     
 
@@ -325,7 +325,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                   isTranslated: isValidTargetFile,
                   isTranslating: false,
                   isDialogLoading: false,
-                  globalError: "Click here to Translate this page" // to [" + this.getLanguageName(languagecode) + "]"
+                  globalError: "Auto-translate from original to [" + this.getLanguageName(this._sPTranslationLanguage) + "]"
                 });
 
                 
@@ -334,14 +334,14 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                 console.dir(error);
                 this.setState({
                   isDialogLoading: false
-                })
+                });
 
               }
             }).catch((error: Error) => {
               console.dir(error);
               this.setState({
                 isDialogLoading: false
-              })
+              });
             });
 
           }
@@ -352,7 +352,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
         console.log(err);
         this.setState({
           isDialogLoading: false
-        })
+        });
       }
       
 
