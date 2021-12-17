@@ -279,7 +279,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
             // const targetRelativePageUrl: string = '/SitePages/' + languagecode + '/' + this._pageName;
             const targetRelativePageUrl: string = this._targetPageurl;
             const targetpage = await ClientsidePageFromFile(sp.web.getFileByServerRelativeUrl(targetRelativePageUrl));
-            await sourcepage.copyTo(targetpage, true);
+            await sourcepage.copyTo(targetpage, false);
 
             console.log('Copy Completed.......');
 
@@ -287,13 +287,13 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
             await new Promise(resolve => setTimeout(resolve, 5000));
 
-            sp.web.loadClientsidePage(targetRelativePageUrl).then(async (clientSidePage: IClientsidePage) => {
+           // sp.web.loadClientsidePage(targetRelativePageUrl).then(async (clientSidePage: IClientsidePage) => {
 
               try {
                 console.log('translation started');
 
                 var clientControls: ColumnControl<any>[] = [];
-                clientSidePage.findControl((c) => {
+                targetpage.findControl((c) => {
                   if (c instanceof ClientsideText) {
                     clientControls.push(c);
                   }
@@ -314,7 +314,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
                 //clientSidePage.title = this._getTranslatedText(clientSidePage.title, languagecode, false);
 
-                clientSidePage.save();
+                targetpage.save(false);
 
                 console.log('translation complete');
 
@@ -337,12 +337,12 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                 });
 
               }
-            }).catch((error: Error) => {
-              console.dir(error);
-              this.setState({
-                isDialogLoading: false
-              });
-            });
+            //}).catch((error: Error) => {
+            //  console.dir(error);
+            //  this.setState({
+            //    isDialogLoading: false
+            //  });
+            //});
 
           }
         }
