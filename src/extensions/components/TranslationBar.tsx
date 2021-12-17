@@ -136,7 +136,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
             dialogContentProps={
               {
                 type: DialogType.normal,
-                title: 'Translation',
+                title: 'Translation in progress. Please do not close this browser window or use the back button.',
                 subText: '',
               }
             }
@@ -227,7 +227,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
       try {
 
       
-        if (confirm('Are you sure you want to translate this page[' + this._pageName + ']')) {
+        if (confirm('You are about to overwrite the content on this page with an automatic translation of the original language. Please confirm')) {
 
           const isValidTargetFile = await this.getTranslationPageMetaData();
 
@@ -318,7 +318,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
                 console.log('translation complete');
 
-                Dialog.alert(`Translation Completed........`);
+                Dialog.alert(`Translation finished. You can now continue editing.`);
 
                 this.setState({
                   isLoading: false,
