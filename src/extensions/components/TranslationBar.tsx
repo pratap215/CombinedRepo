@@ -353,6 +353,14 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
         this.setState({
           isDialogLoading: false
         });
+        Dialog.alert(`Error in Translation`);
+
+        this.setState({
+          isLoading: false,
+          isTranslated: false,
+          isTranslating: false,
+          globalError: "Error Translating Original file " + err
+        });
       }
       
 
