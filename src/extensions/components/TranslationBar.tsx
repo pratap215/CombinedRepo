@@ -23,9 +23,17 @@ import { ColumnControl, ClientsideText, ClientsideWebpart, IClientsidePage, Clie
 import { ITranslationResult } from "../../models/ITranslationResult";
 import { Navigation } from "@pnp/sp/navigation";
 import { Guid } from "@microsoft/sp-core-library";
-import { Dialog } from '@microsoft/sp-dialog';
+import { Dialog }   from '@microsoft/sp-dialog';
 import { SPPermission } from '@microsoft/sp-page-context';
+// import ProgressDialogContent from './../components/ProgressDialog';
+import { DialogContent, Stack, Spinner, IStackTokens } from "office-ui-fabric-react";
+import { DialogType, DialogFooter } from 'office-ui-fabric-react';
+import { Dialog as D1} from 'office-ui-fabric-react'
 
+const stackTokens: IStackTokens = {
+  childrenGap: 20,
+  // maxWidth: 250,
+};
 export class TranslationBar extends React.Component<ITranslationBarProps, ITranslationBarState> {
 
   private _pageName: string | undefined;
@@ -38,7 +46,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
   private _sPTranslationLanguage: string | undefined;
   private _sPTranslatedLanguages: Array<string> | undefined;
   private buttonCaption: string = "---";
-
+  // private _dialog: ProgressDialogContent;
 
   constructor(props: ITranslationBarProps) {
     super(props);
@@ -51,11 +59,16 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
       isTranslated: false,
       isTranslating: false,
       globalError: undefined,
-      userPermission: false
+      userPermission: false,
+      isDialogLoading: false,
+      
     };
   }
 
   public async componentDidMount() {
+    console.log('===========this.props.pageContext=========================');
+    console.log(this.props.pageContext);
+    console.log('====================================');
     this._initTranslationBar();
     this.setState({
       userPermission: this.props.pageContext.list.permissions.hasPermission(SPPermission.manageLists)
@@ -115,10 +128,42 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
               
               />
             </div>
+            {
+            this.state.isDialogLoading ? 
+            <D1
+            hidden={false}
+            // onDismiss={toggleHideDialog}
+            dialogContentProps={
+              {
+                type: DialogType.normal,
+                title: 'Translation',
+                subText: '',
+              }
+            }
+            modalProps={
+              {
+                isBlocking: true,
+                styles: { main: { maxWidth: 450 } },
+              }
+            }
+          >
+                        <Stack tokens={stackTokens}>
+      <div>
+        <Spinner label="Working on it..." />
+      </div>
+      </Stack>
+            <DialogFooter>
+
+            </DialogFooter>
+          </D1>
+            :
+            ""
+          }
           </>
           :
           <>
           </>
+
         }
       
       </>
@@ -201,7 +246,8 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
           }
 
           this.setState({
-            isLoading: true
+            isLoading: true,
+            isDialogLoading: true
             
           });
 
@@ -237,7 +283,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
             console.log('Copy Completed.......');
 
-            Dialog.alert(`Starting Translation............ ` + languagecode);
+            // Dialog.alert(`Starting Translation............ ` + languagecode);
 
             await new Promise(resolve => setTimeout(resolve, 5000));
 
@@ -278,6 +324,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                   isLoading: false,
                   isTranslated: isValidTargetFile,
                   isTranslating: false,
+                  isDialogLoading: false,
                   globalError: "Click here to Translate this page" // to [" + this.getLanguageName(languagecode) + "]"
                 });
 
@@ -285,12 +332,16 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
               } catch (error) {
                 console.dir(error);
-
+                this.setState({
+                  isDialogLoading: false
+                })
 
               }
             }).catch((error: Error) => {
               console.dir(error);
-
+              this.setState({
+                isDialogLoading: false
+              })
             });
 
           }
@@ -299,15 +350,17 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
       } catch (err) {
         console.dir('aynsc error');
         console.log(err);
-
+        this.setState({
+          isDialogLoading: false
+        })
       }
       
 
     })();
 
     this.setState({
-      isLoading: false
-
+      isLoading: false,
+      isDialogLoading: false
     });
   }
 
