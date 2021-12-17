@@ -348,7 +348,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
         }
 
       } catch (err) {
-        console.dir('aynsc error');
+        console.dir('_onTranslate async error');
         console.log(err);
         this.setState({
           isDialogLoading: false
