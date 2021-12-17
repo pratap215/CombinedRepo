@@ -271,7 +271,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
               isLoading: false,
               isTranslated: false,
               isTranslating: false,
-              globalError: "Translating........... "
+              globalError: "Translation in progress. Please do not close this browser window or use the back button "
             });
 
             const languagecode: string = this._sPTranslationLanguage;
