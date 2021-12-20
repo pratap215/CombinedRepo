@@ -1,17 +1,21 @@
-﻿cls
+cls
 $AppCatalogURL = "https://8p5g5n.sharepoint.com/sites/appcatalog"
 $AppName = "machine-translation-extension-client-side-solution"
-
-Connect-PnPOnline -Url $AppCatalogURL -UseWebLogin 
+$encpassword = convertto-securestring -String 'balaji@7hills' -AsPlainText -Force
+$cred = new-object -typename System.Management.Automation.PSCredential -argumentlist 'LP@8p5g5n.onmicrosoft.com', $encpassword
+#Connect-PnPOnline -Url $AppCatalogURL -UseWebLogin 
+Connect-PnPOnline -Url $AppCatalogURL -Credentials $cred
 
 $App = Get-PnPApp -Scope Tenant | Where {$_.Title -eq $AppName}
 
+if (-not ($App.Id -eq $null))
+{
 'Removing '  + $App.Id
- 
-#Remove an App from App Catalog Site
+ #Remove an App from App Catalog Site
 Remove-PnPApp -Identity $App.Id
 
 'Removed ############################################################################################'  
+}
 Write-Output "   "
 Write-Output "   "
 
