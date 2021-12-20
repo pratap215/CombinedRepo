@@ -144,6 +144,33 @@ export class TranslationService implements ITranslationService {
 
   }
 
+  public async getPageMode(restApi: string): Promise<string> {
+    console.log("");
+    console.log('getPageMode :' + restApi);
+    try {
+      //const restApi = `${this.context.pageContext.web.absoluteUrl}/_api/sitepages/pages(${pageId})/checkoutpage`;
+      const result = await this.sphttpclient.post(restApi, SPHttpClient.configurations.v1, {});
+
+      if (!result.ok) {
+        console.log('failed getPageMode');
+        const resultData: any = await result.json();
+        console.log(resultData.error);
+       // Dialog.alert(resultData.error.message);
+        return resultData.error.message;
+      }
+      else {
+        console.log("success getPageMode");
+        const data: any = await result.json();
+        console.log(data);
+        return "";
+      }
+    } catch (e) {
+      console.log('error getPageMode');
+      console.log(e);
+      return "";
+    }
+  }
+
   public async translate(sourceText: string, languageCode: string, asHtml: boolean): Promise<ITranslationResult> {
     const httpClient = this.httpClient;
     const path: string = `translate?api-version=3.0&to=${languageCode}&textType=${asHtml ? "html" : "plain"}`;
