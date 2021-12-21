@@ -11,4 +11,5 @@ export interface ITranslationService {
   breakSentence(sourceText: string): Promise<IBreakSentenceResult>;
   getSitePageLibraryInfo(siteurl: string, listItemId: string): Promise<any>;
   getSitePageLibraryInfoByUniqueId(siteurl: string, pageid: Guid): Promise<any>;
+  getPageMode(restApi: string): Promise<string>
 }

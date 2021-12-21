@@ -12,4 +12,5 @@ export interface ITranslationBarState {
   globalError: string;
   userPermission: boolean;
   isDialogLoading: boolean;
+  showConfirmationDialog?: boolean;
 }

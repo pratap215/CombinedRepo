@@ -4,7 +4,7 @@ import styles from "./TranslationBar.module.scss";
 import { ITranslationBarProps } from "./ITranslationBarProps";
 import { ITranslationBarState } from "./ITranslationBarState";
 
-import { ActionButton } from "office-ui-fabric-react/lib/Button";
+import { ActionButton, DefaultButton, PrimaryButton } from "office-ui-fabric-react/lib/Button";
 import { ILanguage } from "../../models/ILanguage";
 import { INavigation } from "@pnp/sp/navigation";
 import { IContextualMenuItem } from "office-ui-fabric-react/lib/ContextualMenu";
@@ -29,6 +29,7 @@ import { SPPermission } from '@microsoft/sp-page-context';
 import { DialogContent, Stack, Spinner, IStackTokens } from "office-ui-fabric-react";
 import { DialogType, DialogFooter } from 'office-ui-fabric-react';
 import { Dialog as D1 } from 'office-ui-fabric-react';
+import { Dialog as D2 } from 'office-ui-fabric-react';
 
 const stackTokens: IStackTokens = {
   childrenGap: 20,
@@ -61,6 +62,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
       globalError: undefined,
       userPermission: false,
       isDialogLoading: false,
+      showConfirmationDialog: false,
 
     };
   }
@@ -89,6 +91,15 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     }
   }
 
+    public onActionClick = async() => {
+      const isTranslatePageCheckedOut = await this.getPageMode(this._listItemId);
+      if (isTranslatePageCheckedOut == false) {
+        return;
+      }
+      this.setState({
+        showConfirmationDialog: true,
+      })
+    }
   public render(): JSX.Element {
 
     console.log('render');
@@ -124,7 +135,8 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                 className={styles.actionButton}
                 text={globalError}
                 disabled={!isTranslated}
-                onClick={() => this._onTranslateCurrentPage()}
+                // onClick={() => this._onTranslateCurrentPage()}
+                onClick={() => this.onActionClick()}
 
               />
             </div>
@@ -136,8 +148,8 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
             dialogContentProps={
               {
                 type: DialogType.normal,
-                title: 'Translation in progress. Please do not close this browser window or use the back button.',
-                subText: '',
+                title: 'Translation...',
+                subText: 'Translation in progress. Please do not close this browser window or use the back button.',
               }
             }
             modalProps={
@@ -156,6 +168,42 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
             </DialogFooter>
           </D1>
+            :
+            ""
+          }
+                      {
+            this.state.showConfirmationDialog ?
+            <D2
+            hidden={false}
+            // onDismiss={toggleHideDialog}
+            dialogContentProps={
+              {
+                type: DialogType.largeHeader,
+                title: 'Translation',
+                subText: 'You are about to overwrite the content on this page with an automatic translation of the original language. Please confirm',
+              }
+            }
+            modalProps={
+              {
+                isBlocking: true,
+                styles: { main: { maxWidth: 450 } },
+              }
+            }
+          >
+            <DialogFooter>
+<PrimaryButton onClick={() => {
+  this.setState({
+    showConfirmationDialog: false,
+  })
+  this._onTranslateCurrentPage()
+}}>Yes</PrimaryButton>
+<DefaultButton onClick={() => {
+  this.setState({
+    showConfirmationDialog: false,
+  })
+}}>No</DefaultButton>
+            </DialogFooter>
+          </D2>
             :
             ""
           }
@@ -226,13 +274,11 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     (async () => {
       try {
 
-        const isTranslatePageCheckedOut = await this.getPageMode(this._listItemId);
-        if (isTranslatePageCheckedOut == false) {
-          return;
-        }
-
-
-        if (confirm('You are about to overwrite the content on this page with an automatic translation of the original language. Please confirm')) {
+        // const isTranslatePageCheckedOut = await this.getPageMode(this._listItemId);
+        // if (isTranslatePageCheckedOut == false) {
+        //   return;
+        // }
+        //if (confirm('You are about to overwrite the content on this page with an automatic translation of the original language. Please confirm')) {
 
           const isValidTargetFile = await this.getTranslationPageMetaData();
 
@@ -351,7 +397,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
             //});
 
           }
-        }
+        //}
 
       } catch (err) {
         console.dir('_onTranslate async error');
