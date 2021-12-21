@@ -61,7 +61,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
       globalError: undefined,
       userPermission: false,
       isDialogLoading: false,
-      
+
     };
   }
 
@@ -113,11 +113,11 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     //}
 
     console.log(!isTranslated);
-   
+
       return (
         <>
         {
-          this.state.userPermission ? 
+          this.state.userPermission ?
           <>
             <div className={styles.translationBar}>
               <ActionButton
@@ -125,11 +125,11 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                 text={globalError}
                 disabled={!isTranslated}
                 onClick={() => this._onTranslateCurrentPage()}
-              
+
               />
             </div>
             {
-            this.state.isDialogLoading ? 
+            this.state.isDialogLoading ?
             <D1
             hidden={false}
             // onDismiss={toggleHideDialog}
@@ -165,7 +165,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
           </>
 
         }
-      
+
       </>
       );
     //}
@@ -184,7 +184,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     if (isvalid) {
       buttonCaption = "Auto-translate from original to [" + this.getLanguageName(this._sPTranslationLanguage) + "]";
     }
-    
+
 
     this.setState({
       isLoading: false,
@@ -216,7 +216,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     return page;
 
   }
-  
+
   //NEW Code Start
 
 
@@ -226,7 +226,12 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     (async () => {
       try {
 
-      
+        const isTranslatePageCheckedOut = await this.getPageMode(this._listItemId);
+        if (isTranslatePageCheckedOut == false) {
+          return;
+        }
+
+
         if (confirm('You are about to overwrite the content on this page with an automatic translation of the original language. Please confirm')) {
 
           const isValidTargetFile = await this.getTranslationPageMetaData();
@@ -248,7 +253,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
           this.setState({
             isLoading: true,
             isDialogLoading: true
-            
+
           });
 
           console.log('Copying......... ');
@@ -303,6 +308,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                   return false;
                 });
 
+
                 await this._alltranslateClientSideControl(clientControls, languagecode);
 
                 //const nav = sp.web.navigation.topNavigationBar;
@@ -328,7 +334,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                   globalError: "Auto-translate from original to [" + this.getLanguageName(this._sPTranslationLanguage) + "]"
                 });
 
-                
+
 
               } catch (error) {
                 console.dir(error);
@@ -362,7 +368,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
           globalError: "Error Translating Original file " + err
         });
       }
-      
+
 
     })();
 
@@ -419,7 +425,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
   //            ? new TranslationService(this.context.httpClient, environment.config.translatorApiKey, `-${environment.config.regionSpecifier}`)
   //            : new TranslationService(this.context.httpClient, environment.config.translatorApiKey);
 
-  //        //TODO : uncomment the below code 
+  //        //TODO : uncomment the below code
   //        //(async () => {
 
   //        //    let translationResult = await translationService.translate(text, languagecode, asHtml);
@@ -553,6 +559,29 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     }
 
     return false;
+  }
+
+  public async getPageMode(pageId: string): Promise<boolean> {
+    console.log("");
+    console.log('tsx getPageMode :' + pageId);
+    try {
+      const absoluteurl = this.props.absoluteUrl;
+      const restApi = `${absoluteurl}/_api/sitepages/pages(${pageId})/checkoutpage`;
+
+      const result = await this.props.translationService.getPageMode(restApi);
+
+      if (result) {
+        Dialog.alert(result);
+        return false;
+      }
+      else {
+        return true;
+      }
+    } catch (e) {
+      console.log('error tsx getPageMode');
+      console.log(e);
+      return false;
+    }
   }
 
   private getLanguageName(code: string): string {
