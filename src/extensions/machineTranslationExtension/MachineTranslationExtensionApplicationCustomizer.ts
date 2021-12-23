@@ -23,26 +23,34 @@ export default class MachineTranslationExtensionApplicationCustomizer
   extends BaseApplicationCustomizer<IMachineTranslationExtensionApplicationCustomizerProperties> {
 
   private _topPlaceholder: PlaceholderContent | undefined;
+  private pushState: () => any = null;
+  private isCurrentPageInEdiMode: boolean | false;
 
   @override
   public onInit(): Promise<void> {
 
     sp.setup(this.context);
-    console.log("MachineTranslationExtensionApplicationCustomizer1");
-    // Added to handle possible changes on the existence of placeholders.
-    //this.context.placeholderProvider.changedEvent.add(this, this._renderPlaceHolders);
-    //this.context.application.navigatedEvent.add(this, this._renderPlaceHolders);
+    console.log("MachineTranslationExtensionApplicationCustomizer start");
+
+    this.checkCurrentPageMode();
+
+    //this.context.placeholderProvider.changedEvent.add(this, () => {
+
+    //  console.log("MachineTranslationExtensionApplicationCustomizer changedEvent");
+    //  console.log(window.location.href);
+    //});
 
     // Add navigation event to re-render
-    this.context.application.navigatedEvent.add(this, () => {
-      //this.startReactRender();
-      console.log("MachineTranslationExtensionApplicationCustomizer navigatedEvent");
-      this.loadReactComponent();
-    });
+    //this.context.application.navigatedEvent.add(this, () => {
 
-    // Call render method for generating the HTML elements.
-    //this._renderPlaceHolders();
-    this.render();
+    //  console.log("MachineTranslationExtensionApplicationCustomizer navigatedEvent");
+
+    //  this.loadReactComponent();
+    //});
+
+    //this.render();
+
+    console.log("MachineTranslationExtensionApplicationCustomizer end");
 
     return Promise.resolve();
   }
@@ -56,43 +64,56 @@ export default class MachineTranslationExtensionApplicationCustomizer
       }
     } catch (e) {
       console.log("_onDispose error " + e);
-    } 
+    }
   }
 
 
   private render() {
-    console.log("MachineTranslationExtensionApplicationCustomizer render()");
-    if (this.context.placeholderProvider.placeholderNames.indexOf(PlaceholderName.Top) !== -1) {
-      if (!this._topPlaceholder || !this._topPlaceholder.domElement) {
-        this._topPlaceholder = this.context.placeholderProvider.tryCreateContent(PlaceholderName.Top, {
-          onDispose: this.onDispose
-        });
-      }
+    console.log("MachineTranslationExtensionApplicationCustomizer render() start");
+    try {
+      if (this.context.placeholderProvider.placeholderNames.indexOf(PlaceholderName.Top) !== -1) {
+        if (!this._topPlaceholder || !this._topPlaceholder.domElement) {
+          this._topPlaceholder = this.context.placeholderProvider.tryCreateContent(PlaceholderName.Top, {
+            onDispose: this.onDispose
+          });
+        }
 
-      if (!this._topPlaceholder) {
-        console.error('The expected placeholder (Top) was not found.');
-        return;
+        if (!this._topPlaceholder) {
+          console.error('The expected placeholder (Top) was not found.');
+          return;
+        }
+        console.log("MachineTranslationExtensionApplicationCustomizer render() loadReactComponent");
+
+        console.log(this, this.isCurrentPageInEdiMode);
+        this.loadReactComponent();
       }
-      console.log("MachineTranslationExtensionApplicationCustomizer render() loadReactComponent");
-      this.loadReactComponent();
+      else {
+        console.log(`The following placeholder names are available`, this.context.placeholderProvider.placeholderNames);
+      }
+    } catch (e) {
+      console.log("MachineTranslationExtensionApplicationCustomizer render() error " + e);
     }
-    else {
-      console.log(`The following placeholder names are available`, this.context.placeholderProvider.placeholderNames);
-    }
+    console.log("MachineTranslationExtensionApplicationCustomizer render() end");
   }
 
   /**
    * Start the React rendering of your components
    */
   private loadReactComponent() {
-    
+    console.log("MachineTranslationExtensionApplicationCustomizer loadReactComponent start");
+    try {
+      if (this.context.pageContext.listItem == undefined) {
+        console.log("MachineTranslationExtensionApplicationCustomizer loadReactComponent listitem null");
+        this._onDispose();
+        return;
+      }
+    } catch (e) {
+      console.log("MachineTranslationExtensionApplicationCustomizer loadReactComponent error1");
+      console.log(e);
 
-    if (this.context.pageContext.listItem == undefined) {
-      console.log("MachineTranslationExtensionApplicationCustomizer loadReactComponent listitem null");
-      this._onDispose();
-      return;
     }
-    console.log("MachineTranslationExtensionApplicationCustomizer loadReactComponent");
+
+    console.log("MachineTranslationExtensionApplicationCustomizer loadReactComponent2");
     try {
       if (this._topPlaceholder && this._topPlaceholder.domElement) {
         console.log("MachineTranslationExtensionApplicationCustomizer loadReactComponent2");
@@ -100,7 +121,7 @@ export default class MachineTranslationExtensionApplicationCustomizer
           ? new TranslationService(this.context.httpClient, this.context.spHttpClient, this.properties.translatorApiKey, `-${this.properties.regionSpecifier}`)
           : new TranslationService(this.context.httpClient, this.context.spHttpClient, this.properties.translatorApiKey);
         console.log("MachineTranslationExtensionApplicationCustomizer loadReactComponent3");
-       // console.log(this.context.pageContext.listItem);
+        // console.log(this.context.pageContext.listItem);
         const props: ITranslationBarProps = {
           supportedLanguages: this.properties.supportedLanguages,
           currentPageId: this.context.pageContext.listItem.id,
@@ -120,10 +141,11 @@ export default class MachineTranslationExtensionApplicationCustomizer
         this.render();
       }
     } catch (e) {
-      console.log("MachineTranslationExtensionApplicationCustomizer loadReactComponent error");
+      console.log("MachineTranslationExtensionApplicationCustomizer loadReactComponent error2");
       console.log(e);
       this._onDispose();
     }
+    console.log("MachineTranslationExtensionApplicationCustomizer loadReactComponent end");
   }
 
   private renderComponent(res: boolean, props: ITranslationBarProps) {
@@ -180,84 +202,42 @@ export default class MachineTranslationExtensionApplicationCustomizer
     return false;
   }
 
-
-  private _renderPlaceHolders(): void {
-    // Do nothing when no list item is undefined
-    if (!this.context.pageContext.listItem) { return; }
-
-    if (!this._topPlaceholder) {
-      this._topPlaceholder =
-        this.context.placeholderProvider.tryCreateContent(
-          PlaceholderName.Top,
-          { onDispose: this._onDispose });
-
-      // The extension should not assume that the expected placeholder is available.
-      if (!this._topPlaceholder) {
-        console.error('The expected placeholder (Top) was not found.');
-        return;
+  private checkCurrentPageMode(): void {
+    console.log("called checkCurrentPageMode");
+    try {
+      if (!this.pushState) {
+       
+        this.pushState = () => {
+          const defaultPushState = history.pushState;
+         
+          const self = this;
+          return function (data: any, title: string, url?: string | null) {
+            console.log("checkCurrentPageMode url :", url);
+            if (url.toLowerCase().indexOf('mode=edit') !== -1) {
+              self.isCurrentPageInEdiMode = true;
+              self.loadReactComponent();
+              console.log("editmode");
+            }
+            else {
+              self.isCurrentPageInEdiMode = false;
+              self._onDispose();
+              console.log("checkCurrentPageMode other page");
+            }
+            return defaultPushState.apply(this, [data, title, url]);
+          };
+        };
+        history.pushState = this.pushState();
       }
 
-      // Init the translation service
-      const translationService: ITranslationService = this.properties.regionSpecifier
-        ? new TranslationService(this.context.httpClient, this.context.spHttpClient, this.properties.translatorApiKey, `-${this.properties.regionSpecifier}`)
-        : new TranslationService(this.context.httpClient, this.context.spHttpClient, this.properties.translatorApiKey);
+    } catch (e) {
+      console.log('error checkCurrentPageMode');
+      console.log(e);
 
-      const props: ITranslationBarProps = {
-        supportedLanguages: this.properties.supportedLanguages,
-        currentPageId: this.context.pageContext.listItem.id,
-        currentListId: this.context.pageContext.list.id.toString(),
-        currentWebUrl: this.context.pageContext.web.serverRelativeUrl,
-        absoluteUrl: this.context.pageContext.web.absoluteUrl,
-        pageContext: this.context.pageContext,
-        translationService
-      };
-
-      console.log("_renderPlaceHolders new");
-      this.getTranslationPageMetaData(props, translationService).then(res =>
-        this.renderComponent(res, props)
-      );
-
-      //const elem: React.ReactElement<ITranslationBarProps> = React.createElement(TranslationBar, props);
-      //ReactDOM.render(elem, this._topPlaceholder.domElement);
-    }
-  }
-
-  
-
-  private startReactRender() {
-    if (this._topPlaceholder && this._topPlaceholder.domElement) {
-      // Init the translation service
-      const translationService: ITranslationService = this.properties.regionSpecifier
-        ? new TranslationService(this.context.httpClient, this.context.spHttpClient, this.properties.translatorApiKey, `-${this.properties.regionSpecifier}`)
-        : new TranslationService(this.context.httpClient, this.context.spHttpClient, this.properties.translatorApiKey);
-
-
-
-      const props: ITranslationBarProps = {
-        supportedLanguages: this.properties.supportedLanguages,
-        currentPageId: this.context.pageContext.listItem.id,
-        currentListId: this.context.pageContext.list.id.toString(),
-        currentWebUrl: this.context.pageContext.web.serverRelativeUrl,
-        absoluteUrl: this.context.pageContext.web.absoluteUrl,
-        translationService,
-        pageContext: this.context.pageContext
-      };
-      console.log("startReactRender new");
-      this.getTranslationPageMetaData(props, translationService).then(res =>
-        this.renderComponent(res, props)
-      );
-      //const element: React.ReactElement<ITranslationBarProps> = React.createElement(TranslationBar, props);
-      //ReactDOM.render(element, this._topPlaceholder.domElement);
-    } else {
-      console.log('DOM element of the header is undefined. Start to re-render.');
-      this._renderPlaceHolders();
     }
   }
 
 
 
-
-  
 
 
 

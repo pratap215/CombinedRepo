@@ -32,6 +32,116 @@ import { Dialog as D1 } from 'office-ui-fabric-react';
 import { Dialog as D2 } from 'office-ui-fabric-react';
 import * as ReactDOM from "react-dom";
 
+export class ConfirmDialogContent extends React.Component<any, any>  {
+  public labelName: string;
+  constructor(props) {
+    super(props);
+    this.state = {
+      showDialog: true,
+    };
+  }
+
+  public componentDidMount() {
+    // Sleep in loop
+    // sp.web.lists.getByTitle('kkkk').items.getAll().then(res => {
+    //   console.log(res[0]['ID']);
+    //   this.setState({
+    //     Progress: 0.5
+    //   });
+    //   console.log('hh');
+    // });
+    // commented this for loop for testing on 16/12
+    // for (let i = 2; i < 11; i++) {
+    //     setTimeout(() => {
+    //         this.setState({
+    //             Progress: i / 10
+    //         });
+
+    //         if (this.state.Progress == 1) {
+    //             this.props.close();
+    //         }
+
+    //     }, 1000);
+    // }
+  }
+
+  public render() {
+    return (
+      this.state.showDialog ?
+        <>
+          <DialogContent
+            type={DialogType.normal}
+            title='Translation'
+            subText={`You are about to overwrite the content on this page with \nan automatic translation of the original language. Please confirm`}
+            showCloseButton={false}
+            isMultiline={true}
+
+          >
+            <DialogFooter>
+              <PrimaryButton onClick={() => {
+                //this.ceb._onTranslate()
+                this.props.submit("Yes");
+
+              }}>Yes
+              </PrimaryButton>
+              <DefaultButton onClick={() => {
+                this.props.submit("No");
+
+              }}>No
+              </DefaultButton>
+            </DialogFooter>
+          </DialogContent>
+        </>
+        :
+        null
+
+
+    );
+  }
+
+}
+
+export default class ConfirmDialog extends BaseDialog {
+  public initprogress: number;
+  public labelname: string;
+  public description: string;
+
+  constructor() {
+    super({ isBlocking: true });
+
+  }
+
+  public render(): void {
+    ReactDOM.render(<ConfirmDialogContent
+      // DefaultProgress={this.initprogress}
+      // close={this.close}
+      labelname={this.labelname}
+      submit={this._submit}
+    // description={this.description}
+
+    />, this.domElement);
+  }
+
+  public getConfig(): IDialogConfiguration {
+    return {
+      isBlocking: true
+    };
+  }
+  protected onAfterClose(): void {
+    super.onAfterClose();
+
+    // Clean up the element for the next dialog
+    ReactDOM.unmountComponentAtNode(this.domElement);
+  }
+  private _submit = (labelName: string) => {
+    this.labelname = labelName;
+    this.close();
+  }
+}
+
+
+
+
 const stackTokens: IStackTokens = {
   childrenGap: 20,
   // maxWidth: 250,
@@ -53,7 +163,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
   constructor(props: ITranslationBarProps) {
     super(props);
-    this._confirmDialog = new ConfirmDialog();
+    
     this.state = {
       availableLanguages: [],
       selectedLanguage: undefined,
@@ -67,6 +177,9 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
       showConfirmationDialog: false,
 
     };
+    this._confirmDialog = new ConfirmDialog();
+
+    console.log(document.location.href.indexOf("Mode=Edit") !== -1);
   }
 
   public async componentDidMount() {
@@ -99,14 +212,14 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
         return;
       }
       this._confirmDialog.show().then(() => {
-        if(this._confirmDialog.labelname === "Yes"){
-          this._onTranslateCurrentPage()
+        if (this._confirmDialog.labelname === "Yes") {
+          this._onTranslateCurrentPage();
         }
-        else{
+        else {
           console.log("No");
           return;
         }
-      })  
+      });
       // this.setState({
       //   showConfirmationDialog: true,
       // })
@@ -677,110 +790,5 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
 
 
-
-}
-export default class ConfirmDialog extends BaseDialog {
-  public initprogress: number;
-  public labelname: string;
-  public description: string;
-
-  constructor() {
-      super({ isBlocking: true });
-     
-  }
-
-  public render(): void {
-      ReactDOM.render(<ConfirmDialogContent
-          // DefaultProgress={this.initprogress}
-          // close={this.close}
-          labelname={this.labelname}
-          submit={ this._submit }
-          // description={this.description}
-
-      />, this.domElement);
-  }
-
-  public getConfig(): IDialogConfiguration {
-      return {
-          isBlocking: true
-      };
-  }
-  protected onAfterClose(): void {
-      super.onAfterClose();
-      
-      // Clean up the element for the next dialog
-      ReactDOM.unmountComponentAtNode(this.domElement);
-  }
-  private _submit = (labelName: string) => {
-      this.labelname = labelName;
-      this.close();
-  }
-}
-export class ConfirmDialogContent extends React.Component<any, any>  {
-  public labelName: string;
-  constructor(props) {
-      super(props);
-      this.state = {
-          showDialog: true,
-      };
-  }
-
-  public componentDidMount() {
-      // Sleep in loop
-      // sp.web.lists.getByTitle('kkkk').items.getAll().then(res => {
-      //   console.log(res[0]['ID']);
-      //   this.setState({
-      //     Progress: 0.5
-      //   });
-      //   console.log('hh');
-      // });
-      // commented this for loop for testing on 16/12
-      // for (let i = 2; i < 11; i++) {
-      //     setTimeout(() => {
-      //         this.setState({
-      //             Progress: i / 10
-      //         });
-
-      //         if (this.state.Progress == 1) {
-      //             this.props.close();
-      //         }
-
-      //     }, 1000);
-      // }
-  }
-
-  public render(){
-      return (
-          this.state.showDialog ?
-          <>
-                  <DialogContent
-          type={DialogType.normal}
-              title='Translation'
-              subText={`You are about to overwrite the content on this page with \nan automatic translation of the original language. Please confirm`}
-              showCloseButton={false}
-              isMultiline={true}
-
-          >
-          <DialogFooter>
-          <PrimaryButton onClick={() => {
-              //this.ceb._onTranslate()
-              this.props.submit("Yes");
-
-          }}>Yes
-          </PrimaryButton>
-          <DefaultButton onClick={() => {
-      this.props.submit("No");           
-
-          }}>No
-          </DefaultButton>
-          </DialogFooter>
-      </DialogContent>
-          </>
-          :
-          null
-
-
-      )
-  }
 
 }

@@ -30,7 +30,7 @@ Write-Output "(((((((((((((((Starting App catalog Deploy))))))))))))))))))"
 
 
 #$AppCatalogURL = "https://dwpstage.sharepoint.com/sites/appcatalog"
-$AppFilePath = "C:\Users\adminpen.arpula\spfxclientsideprojects\react-application-machine-translations\sharepoint\solution\machine-translation-extension.sppkg"
+$AppFilePath = "C:\Users\adminpen.arpula\spfxclientsideprojects\CombinedRepo\sharepoint\solution\machine-translation-extension.sppkg"
  
 #Connect to SharePoint Online App Catalog site
 #Connect-PnPOnline -Url $AppCatalogURL -UseWebLogin 
