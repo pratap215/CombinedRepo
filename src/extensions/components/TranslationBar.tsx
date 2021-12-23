@@ -179,7 +179,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     };
     this._confirmDialog = new ConfirmDialog();
 
-    console.log(document.location.href.indexOf("Mode=Edit") !== -1);
+    //console.log(document.location.href.indexOf("Mode=Edit") !== -1);
   }
 
   public async componentDidMount() {
