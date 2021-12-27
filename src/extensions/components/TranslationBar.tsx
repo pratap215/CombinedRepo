@@ -466,7 +466,9 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
                 console.log('translation complete');
 
-                Dialog.alert(`Translation finished. You can now continue editing.`);
+                Dialog.alert(`Translation finished. You can now continue editing.`).then(() => {
+                  window.location.reload();
+                })
 
                 this.setState({
                   isLoading: false,
@@ -476,7 +478,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                   globalError: "Auto-translate from original to [" + this.getLanguageName(this._sPTranslationLanguage) + "]"
                 });
 
-
+                
 
               } catch (error) {
                 console.dir(error);
