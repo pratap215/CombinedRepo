@@ -26,12 +26,17 @@ import { Guid } from "@microsoft/sp-core-library";
 import { BaseDialog, Dialog, IDialogConfiguration }   from '@microsoft/sp-dialog';
 import { SPPermission } from '@microsoft/sp-page-context';
 // import ProgressDialogContent from './../components/ProgressDialog';
-import { DialogContent, Stack, Spinner, IStackTokens } from "office-ui-fabric-react";
+import { DialogContent, Stack, Spinner, IStackTokens, IDialogContentStyles } from "office-ui-fabric-react";
 import { DialogType, DialogFooter } from 'office-ui-fabric-react';
 import { Dialog as D1 } from 'office-ui-fabric-react';
 import { Dialog as D2 } from 'office-ui-fabric-react';
 import * as ReactDOM from "react-dom";
 
+const dStyle = {
+  subText: {
+    fontSize: '18px'
+  }
+}
 export class ConfirmDialogContent extends React.Component<any, any>  {
   public labelName: string;
   constructor(props) {
@@ -75,8 +80,10 @@ export class ConfirmDialogContent extends React.Component<any, any>  {
             subText={`You are about to overwrite the content on this page with \nan automatic translation of the original language. Please confirm`}
             showCloseButton={false}
             isMultiline={true}
-
-          >
+            className={styles.dialogTitle}
+            styles={dStyle}
+           >
+            
             <DialogFooter>
               <PrimaryButton onClick={() => {
                 //this.ceb._onTranslate()
