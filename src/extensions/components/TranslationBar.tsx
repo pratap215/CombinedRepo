@@ -31,6 +31,10 @@ import { DialogType, DialogFooter } from 'office-ui-fabric-react';
 import { Dialog as D1 } from 'office-ui-fabric-react';
 import { Dialog as D2 } from 'office-ui-fabric-react';
 import * as ReactDOM from "react-dom";
+import { environment } from "../../environments/environment";
+import { ITranslationService } from "../../services/ITranslationService";
+import { TranslationService } from "../../services/TranslationService";
+import { HttpClient, HttpClientConfiguration } from "@microsoft/sp-http";
 
 const dStyle = {
   subText: {
@@ -44,9 +48,15 @@ export class ConfirmDialogContent extends React.Component<any, any>  {
     this.state = {
       showDialog: true,
     };
+
   }
 
   public componentDidMount() {
+
+    window.top.addEventListener('beforeunload', (event) => {
+      event.preventDefault();
+      event.returnValue = null
+    });
     // Sleep in loop
     // sp.web.lists.getByTitle('kkkk').items.getAll().then(res => {
     //   console.log(res[0]['ID']);
@@ -69,7 +79,12 @@ export class ConfirmDialogContent extends React.Component<any, any>  {
     //     }, 1000);
     // }
   }
-
+  // public componentWillUnmount(): void {
+  //   window.removeEventListener('beforeunload', (event) => {
+  //     event.preventDefault();
+  //     event.returnValue = null
+  //   });
+  // }
   public render() {
     return (
       this.state.showDialog ?
@@ -281,6 +296,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                 type: DialogType.normal,
                 title: 'Translation...',
                 subText: 'Translation in progress. Please do not close this browser window or use the back button.',
+                styles: dStyle
               }
             }
             modalProps={
@@ -453,6 +469,11 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
                 await this._alltranslateClientSideControl(clientControls, languagecode);
 
+
+                await this._getTranslatedTitle(sourcepage.title, languagecode, false)
+                .then(text => {
+                  if(text) targetpage.title = text
+                })
                 //const nav = sp.web.navigation.topNavigationBar;
                 //Dialog.alert(nav.length.toString());
                 //const childrenData = await nav.getById(1).children();
@@ -460,14 +481,20 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                 //    Title: "A new title",
                 //});
 
-                //clientSidePage.title = this._getTranslatedText(clientSidePage.title, languagecode, false);
-
+                // targetpage.title = this._getTranslatedText(targetpage.title, languagecode, false);
+                //targetpage.title = "dfdfd"
+                // let translationPageTitle = await this.props.translationService.translate(targetpage.title, languagecode, false);
+                // //targetpage.title = translationPageTitle
+                // console.log('=============translationPageTitle=======================');
+                // console.log(translationPageTitle);
+                // console.log('====================================');
                 targetpage.save(false);
 
                 console.log('translation complete');
-
+                
                 Dialog.alert(`Translation finished. You can now continue editing.`).then(() => {
-                  window.location.reload();
+                  window.top.onbeforeunload = null;
+                  window.location.replace(this.props.pageContext.site.absoluteUrl +"/"+ this.props.pageContext.site.serverRequestPath)
                 })
 
                 this.setState({
@@ -522,6 +549,18 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     });
   }
 
+  private _getTranslatedTitle = async(title: string, languagecode: string, asHtml: boolean): Promise<string> => {
+    let titleTranslate: string = '';
+    try{
+  let te = await this.props.translationService.translate(title, languagecode, false);
+  titleTranslate = te.translations[0].text;
+  return Promise.resolve(titleTranslate);
+  }catch(err){
+    return Promise.resolve('');
+  }
+   
+  }
+
   private _alltranslateClientSideControl = async ( clientsideControls: ColumnControl<any>[], languagecode: string): Promise<void> => {
     try {
       for (const c of clientsideControls) {
@@ -559,26 +598,30 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
     }
   }
 
-  //private _getTranslatedText = (text: string, languagecode: string, asHtml: boolean): string => {
+  // private _getTranslatedText = async (text: string, languagecode: string, asHtml: boolean): Promise<string> => {
 
 
   //    let translatedText: string = "";
   //    if (text) {
-  //        // console.log('start');
+  //        console.log('_getTranslatedText start');
   //        const translationService: ITranslationService = environment.config.regionSpecifier
-  //            ? new TranslationService(this.context.httpClient, environment.config.translatorApiKey, `-${environment.config.regionSpecifier}`)
-  //            : new TranslationService(this.context.httpClient, environment.config.translatorApiKey);
+  //        ? new TranslationService(this.context.httpClient, this.context.spHttpClient, environment.config.translatorApiKey, `-${environment.config.regionSpecifier}`)
+  //        : new TranslationService(this.context.httpClient, this.context.spHttpClient, environment.config.translatorApiKey);
+
+
+
 
   //        //TODO : uncomment the below code
   //        //(async () => {
 
-  //        //    let translationResult = await translationService.translate(text, languagecode, asHtml);
-  //        //    translatedText = translationResult.translations[0].text
+  //           let translationResult = await translationService.translate(text, languagecode, asHtml);
+  //           translatedText = translationResult.translations[0].text
 
-  //console.log('end');
+  // console.log('end');
 
-  //return translatedText;
-  //}
+  // return translatedText;
+  // }
+//}
   //*************Function to get Multilingual Feature Enabled************************************* */
   public getMultiLingualFeatureEnabled = (): Promise<boolean> => {
     return new Promise<boolean>(async (resolve, reject) => {

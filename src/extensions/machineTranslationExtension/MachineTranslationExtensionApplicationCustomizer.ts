@@ -228,6 +228,9 @@ export default class MachineTranslationExtensionApplicationCustomizer
         };
         history.pushState = this.pushState();
       }
+      else{
+      
+      }
 
     } catch (e) {
       console.log('error checkCurrentPageMode');
