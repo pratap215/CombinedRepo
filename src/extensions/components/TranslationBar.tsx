@@ -489,7 +489,14 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                 // console.log(translationPageTitle);
                 // console.log('====================================');
                 targetpage.save(false);
-
+                const isCheckedOut = await this.getPageMode(this._listItemId);
+                console.log('==========isCheckedOut==========================');
+                //console.log(isCheckedOut);
+                
+                if(isCheckedOut){
+                  await sp.web.getFileByServerRelativeUrl(`${this._targetPageurl}`).checkin("Automated Translation");
+                }
+                console.log('====================================');
                 console.log('translation complete');
                 
                 Dialog.alert(`Translation finished. You can now continue editing.`).then(() => {
