@@ -466,15 +466,43 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
               return false;
             });
 
-            console.log(targetpage.sections);
+
 
             await this._alltranslateClientSideControl(clientControls, languagecode);
-
 
             await this._getTranslatedTitle(sourcepage.title, languagecode, false)
               .then(text => {
                 if (text) targetpage.title = text;
               });
+
+            for (const section of targetpage.sections) {
+              const colLength = section.columns.length;
+              for (let i = 0; i <= colLength; i++) {
+                if (section.columns[i]) {
+                  for (const control of section.columns[i].controls) {
+                    if (control.data) {
+                      if (control.data.controlType == '4') {
+
+                       // console.log(control.data.zoneGroupMetadata);
+                        let propkeys = Object.keys(control.data.zoneGroupMetadata);
+                        for (const key of propkeys) {
+                          if (key == 'displayName'){
+                            const propvalue = control.data.zoneGroupMetadata[key];
+                            if (propvalue) {
+                              let translationResult = await this.props.translationService.translate(propvalue, languagecode, false);
+                              const translatedText = translationResult.translations[0].text;
+                              control.data.zoneGroupMetadata[key] = translatedText;
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+
             //const nav = sp.web.navigation.topNavigationBar;
             //Dialog.alert(nav.length.toString());
             //const childrenData = await nav.getById(1).children();
@@ -499,6 +527,8 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
             }
             console.log('====================================');
             console.log('translation complete');
+
+
 
             Dialog.alert(`Translation finished. You can now continue editing.`).then(() => {
               window.top.onbeforeunload = null;
@@ -595,7 +625,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
               for (const key of propkeys) {
                 if (key == 'description' || key == 'buttonText' || key == 'overlayText' || key == 'title') {
                   const propvalue = c.data.webPartData.properties[key];
-                  console.log(propvalue);
+                  // console.log(propvalue);
                   let translationResult = await this.props.translationService.translate(propvalue, languagecode, false);
                   const translatedText = translationResult.translations[0].text;
                   c.data.webPartData.properties[key] = translatedText;
