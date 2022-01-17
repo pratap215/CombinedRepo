@@ -32,7 +32,7 @@ export default class MachineTranslationExtensionApplicationCustomizer
     sp.setup(this.context);
     console.log("MachineTranslationExtensionApplicationCustomizer start");
 
-    this.checkCurrentPageMode();
+   // this.checkCurrentPageMode();
 
     //this.context.placeholderProvider.changedEvent.add(this, () => {
 
@@ -41,14 +41,14 @@ export default class MachineTranslationExtensionApplicationCustomizer
     //});
 
     // Add navigation event to re-render
-    //this.context.application.navigatedEvent.add(this, () => {
+    this.context.application.navigatedEvent.add(this, () => {
 
-    //  console.log("MachineTranslationExtensionApplicationCustomizer navigatedEvent");
+      console.log("MachineTranslationExtensionApplicationCustomizer navigatedEvent");
 
-    //  this.loadReactComponent();
-    //});
+      this.loadReactComponent();
+    });
 
-    //this.render();
+    this.render();
 
     console.log("MachineTranslationExtensionApplicationCustomizer end");
 

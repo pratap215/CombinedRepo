@@ -475,32 +475,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                 if (text) targetpage.title = text;
               });
 
-            for (const section of targetpage.sections) {
-              const colLength = section.columns.length;
-              for (let i = 0; i <= colLength; i++) {
-                if (section.columns[i]) {
-                  for (const control of section.columns[i].controls) {
-                    if (control.data) {
-                      if (control.data.controlType == '4') {
-
-                       // console.log(control.data.zoneGroupMetadata);
-                        let propkeys = Object.keys(control.data.zoneGroupMetadata);
-                        for (const key of propkeys) {
-                          if (key == 'displayName'){
-                            const propvalue = control.data.zoneGroupMetadata[key];
-                            if (propvalue) {
-                              let translationResult = await this.props.translationService.translate(propvalue, languagecode, false);
-                              const translatedText = translationResult.translations[0].text;
-                              control.data.zoneGroupMetadata[key] = translatedText;
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+            await this.translateSectionHeader(targetpage, languagecode);
 
 
             //const nav = sp.web.navigation.topNavigationBar;
@@ -518,6 +493,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
             // console.log(translationPageTitle);
             // console.log('====================================');
             targetpage.save(false);
+
             const isCheckedOut = await this.getPageMode(this._listItemId);
             console.log('==========isCheckedOut==========================');
             //console.log(isCheckedOut);
@@ -697,6 +673,44 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
   }
 
+
+  private async translateSectionHeader(targetpage: IClientsidePage, languagecode: string) {
+    console.log('translateSectionHeader ');
+    try {
+
+      for (const section of targetpage.sections) {
+        const colLength = section.columns.length;
+        for (let i = 0; i <= colLength; i++) {
+          if (section.columns[i]) {
+            for (const control of section.columns[i].controls) {
+              if (control.data) {
+                if (control.data.controlType == '4') {
+
+                  // console.log(control.data.zoneGroupMetadata);
+                  let propkeys = Object.keys(control.data.zoneGroupMetadata);
+                  for (const key of propkeys) {
+                    if (key == 'displayName') {
+                      const propvalue = control.data.zoneGroupMetadata[key];
+                      if (propvalue) {
+                        let translationResult = await this.props.translationService.translate(propvalue, languagecode, false);
+                        const translatedText = translationResult.translations[0].text;
+                        control.data.zoneGroupMetadata[key] = translatedText;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+    } catch (e) {
+      console.log('error translateSectionHeader');
+      console.log(e);
+
+    }
+  }
 
   //Metadata start
 
