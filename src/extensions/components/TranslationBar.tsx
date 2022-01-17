@@ -597,14 +597,27 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
             }
 
             if (c.data.webPartData.properties) {
+              console.log(c);
               let propkeys = Object.keys(c.data.webPartData.properties);
+             
               for (const key of propkeys) {
-                if (key == 'description' || key == 'buttonText' || key == 'overlayText' || key == 'title') {
+                if (key == 'description' || key == 'buttonText' || key == 'overlayText' || key == 'title' || key == 'xAxisLabel' || key == 'yAxisLabel') {
                   const propvalue = c.data.webPartData.properties[key];
                   // console.log(propvalue);
                   let translationResult = await this.props.translationService.translate(propvalue, languagecode, false);
                   const translatedText = translationResult.translations[0].text;
                   c.data.webPartData.properties[key] = translatedText;
+                }
+                if (key == 'data') {
+                  if (c.data.webPartData.properties.data) {
+                    c.data.webPartData.properties.data.map(async (item) => {
+                      if (item.label) {
+                        let translationResult = await this.props.translationService.translate(item.label, languagecode, false);
+                        const translatedText = translationResult.translations[0].text;
+                        item.label = translatedText;
+                      }
+                    });
+                  }
                 }
               }
 
