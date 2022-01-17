@@ -519,6 +519,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
               globalError: "Auto-translate from original to [" + this.getLanguageName(this._sPTranslationLanguage) + "]"
             });
 
+           // await this.getTestListItems(languagecode);
 
 
           } catch (error) {
@@ -599,7 +600,7 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
             if (c.data.webPartData.properties) {
               console.log(c);
               let propkeys = Object.keys(c.data.webPartData.properties);
-             
+
               for (const key of propkeys) {
                 if (key == 'description' || key == 'buttonText' || key == 'overlayText' || key == 'title' || key == 'xAxisLabel' || key == 'yAxisLabel') {
                   const propvalue = c.data.webPartData.properties[key];
@@ -917,7 +918,72 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
   //Metadata end
 
+  private async getTestListItems(languagecode: string): Promise<void> {
+    console.log('getTest List Items');
+    const languageName = 'English'
+    try {
+      const items: any[] =
+        await sp.web.lists
+          .getByTitle("Test List")
+          .items
+          .filter("ItemLanguage eq '" + languageName + "'")
+          .get();
 
+      console.log(items);
+
+      items.map(async (item, index) => {
+        //console.log(item["Id"]);
+        //console.log(item["NormalText"]);
+        const propvalue = item["NormalText"];
+        let translationResult = await this.props.translationService.translate(propvalue, languagecode, false);
+        const translatedText = translationResult.translations[0].text;
+
+        let listitems: any[];
+
+        try {
+          listitems = await sp.web.lists.getByTitle("Test List").items.filter("ItemId eq '" + item["Id"] + "'").get();
+
+          if (listitems && listitems.length > 0) {
+            const rowItem = listitems[0];
+            console.log("Edit List Item");
+            await sp.web.lists.getByTitle("Test List").items.getById(rowItem["Id"]).update({
+              NormalText: translatedText
+            }).then((iar: any) => {
+              console.log("Item updated");
+            })
+              .catch((error: any) => {
+                console.log("Item Update Error: ", error);
+              });
+          }
+        }
+        catch (e) {
+          console.error(e);
+        }
+
+        if (listitems.length == 0) {
+          console.log("Add List Item");
+          await sp.web.lists.getByTitle("Test List").items.add({
+            Title: item["Title"],
+            NormalText: translatedText,
+            ItemLanguage: 'German',
+            ItemId: item["Id"].toString()
+          })
+            .then((iar: any) => {
+              console.log("Item Added");
+            })
+            .catch((error: any) => {
+              console.log("Add Item Error: ", error);
+            });
+        }
+
+      }
+      );
+
+    }
+    catch (e) {
+      console.error(e);
+    }
+  }
 
   //NEW Code End
 
