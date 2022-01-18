@@ -920,8 +920,31 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
 
   private async getTestListItems(languagecode: string): Promise<void> {
     console.log('getTest List Items');
-    const languageName = 'English'
+    const languageName = 'English';
+    const datatype = 'Single line of text';
     try {
+
+      let fieldInfo = "";
+      //const fields: any[] =
+        await sp.web.lists
+          .getByTitle("Test List")
+          .fields.select('Id', 'Title', 'InternalName', 'EntityPropertyName', 'TypeDisplayName', 'TypeShortDescription')
+          .filter("ReadOnlyField eq false and Hidden eq false and TypeDisplayName eq '" + datatype + "'")
+          .get().then(function (result) {
+
+            for (let i = 0; i < result.length; i++) {
+              console.log(result[i].Title + '  ' + result[i].InternalName + ' ' + result[i].TypeDisplayName + '  ' + result[i].TypeShortDescription);
+            }
+
+          }).catch(function (err) {
+            console.log(err);
+          });
+
+
+
+
+
+
       const items: any[] =
         await sp.web.lists
           .getByTitle("Test List")
