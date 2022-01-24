@@ -455,6 +455,13 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
           try {
             console.log('translation started');
 
+            await this._getTranslatedTitle(sourcepage.title, languagecode, false)
+              .then(text => {
+                if (text) targetpage.title = text;
+              });
+
+            await this.translateSectionHeader(targetpage, languagecode);
+
             var clientControls: ColumnControl<any>[] = [];
             targetpage.findControl((c) => {
               if (c instanceof ClientsideText) {
@@ -466,16 +473,9 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
               return false;
             });
 
-
-
             await this._alltranslateClientSideControl(clientControls, languagecode);
 
-            await this._getTranslatedTitle(sourcepage.title, languagecode, false)
-              .then(text => {
-                if (text) targetpage.title = text;
-              });
-
-            await this.translateSectionHeader(targetpage, languagecode);
+            
 
 
             //const nav = sp.web.navigation.topNavigationBar;
