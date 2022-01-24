@@ -463,6 +463,38 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                   else if (c instanceof ClientsideWebpart) {
                     clientControls.push(c);
                   }
+                  if(c.data && c.data.webPartData){
+                    if (c.data.webPartData.title === "Image") {
+                      console.log("-------------Image webpart found--------------");
+                      console.log("---starting----");
+                      const olText = async () => {
+                          console.log("---started----");
+                          await this._getTranslatedTitle(c.data.webPartData.properties.overlayText, languagecode, false)
+                          .then(text => {
+                            if(text) c.data.webPartData.properties.overlayText = text
+                          })
+                        }
+                      olText();
+                  }
+                  }
+                  if(c.data && c.data.webPartData){
+                    if (c.data.webPartData.title === "Quick chart") {
+                      console.log("-------------chart webpart found--------------");
+                      console.log("---starting chart----");
+                      const olChartText = async () => {
+                          console.log("---started chart----");
+                          c.data.webPartData.properties.data.map(async (item) => {
+                            await this._getTranslatedTitle(item.label, languagecode, false)
+                            .then(text => {
+                              if(text) item.label = text
+                            })
+                          })
+                        }
+                      //clientControls.push(c);
+                      olChartText();
+                  }
+                  }
+
                   return false;
                 });
 
