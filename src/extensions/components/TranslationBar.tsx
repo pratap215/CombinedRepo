@@ -528,12 +528,17 @@ export class TranslationBar extends React.Component<ITranslationBarProps, ITrans
                 if(isCheckedOut){
                   await sp.web.getFileByServerRelativeUrl(`${this._targetPageurl}`).checkin("Automated Translation");
                 }
-                console.log('====================================');
-                console.log('translation complete');
+                console.log('==============pageContext======================');
+                console.log(this.props.pageContext);
                 
+                console.log('translation complete');
+                console.log('============this.props.pageContext.site.absoluteUrl + this._targetPageurl========================');
+                console.log(this.props.pageContext.site.absoluteUrl + this._targetPageurl);
+                console.log('====================================');
                 Dialog.alert(`Translation finished. You can now continue editing.`).then(() => {
                   window.top.onbeforeunload = null;
-                  window.location.replace(this.props.pageContext.site.absoluteUrl +"/"+ this.props.pageContext.site.serverRequestPath)
+
+                  window.location.replace(this._targetPageurl)
                 })
 
                 this.setState({
