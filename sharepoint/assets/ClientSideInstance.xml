@@ -1,9 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Elements xmlns="http://schemas.microsoft.com/sharepoint/">
     <ClientSideComponentInstance
-        Title="MachineTranslationExtension"
-        Location="ClientSideExtension.ApplicationCustomizer"
-        ComponentId="aa40cc51-6498-4c01-91d4-b5f8d2fe1e8b"
-        Properties="{&quot;preAllocatedApplicationCustomizerTopHeight&quot;:&quot;40&quot;,&quot;supportedLanguages&quot;:[&quot;en&quot;,&quot;de&quot;,&quot;zh-Hans&quot;],&quot;translatorApiKey&quot;:&quot;3f272905281e48cc9e539d881729dab2&quot;}">
+    Title="MachineTranslationExtension"
+    Location="ClientSideExtension.ApplicationCustomizer"
+    ComponentId="aa40cc51-6498-4c01-91d4-b5f8d2fe1e8b"
+    Properties="{&quot;preAllocatedApplicationCustomizerTopHeight&quot;:&quot;40&quot;,&quot;supportedLanguages&quot;:[&quot;en&quot;,&quot;de&quot;,&quot;zh-Hans&quot;],&quot;translatorApiKey&quot;:&quot;583852e1369d4f0caf4928a6457bfcef&quot;}"
+  >
     </ClientSideComponentInstance>
 </Elements>
